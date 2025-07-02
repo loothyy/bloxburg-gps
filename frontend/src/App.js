@@ -3,163 +3,171 @@ import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Accurate Bloxburg map data based on the provided detailed images
+// Real Bloxburg map coordinates based on the actual uploaded images
+// Using the simplified map as reference for accurate road network
 const LOCATIONS = {
-  // Mountain Region
-  'Peak Mountain': { x: 120, y: 150, type: 'landmark' },
-  'Peak Camp': { x: 150, y: 190, type: 'landmark' },
-  'Meh-Meh Falls': { x: 280, y: 180, type: 'landmark' },
-  'Observatory Overlook': { x: 180, y: 420, type: 'landmark' },
-  'Mountain Road Bus Stop': { x: 200, y: 320, type: 'transport' },
+  // Mountain/Northern Region
+  'Peak Mountain': { x: 120, y: 80, type: 'mountain' },
+  'Peak Camp': { x: 160, y: 120, type: 'camping' },
+  'Meh-Meh Falls': { x: 280, y: 140, type: 'waterfall' },
+  'Observatory Overlook': { x: 140, y: 300, type: 'observatory' },
+  'Bloxburg Cave': { x: 180, y: 180, type: 'cave' },
+  
+  // Greenfield Plains (Eastern area)
+  'Greenfield Plains': { x: 620, y: 200, type: 'residential' },
+  'Mountain Bike Stand': { x: 650, y: 230, type: 'recreation' },
+  'Telecom Mast': { x: 680, y: 160, type: 'infrastructure' },
+  'Wind Turbines': { x: 720, y: 140, type: 'infrastructure' },
+  'Country Road': { x: 680, y: 280, type: 'road' },
   
   // Central Lake Area
-  'Lakeview Heights': { x: 450, y: 300, type: 'residential' },
-  'Lakeview Heights Parking': { x: 470, y: 320, type: 'parking' },
-  'Glider Spot': { x: 520, y: 350, type: 'landmark' },
-  
-  // Greenfield Plains
-  'Greenfield Plains': { x: 650, y: 250, type: 'residential' },
-  'Mountain Bike Stand': { x: 680, y: 280, type: 'landmark' },
-  'Telecom Mast (Plains)': { x: 720, y: 220, type: 'infrastructure' },
-  'Wind Turbines (Plains)': { x: 750, y: 200, type: 'infrastructure' },
+  'Lakeview Heights': { x: 420, y: 260, type: 'residential' },
+  'Glider Spot': { x: 460, y: 290, type: 'recreation' },
+  'Innerloop HWY': { x: 480, y: 320, type: 'highway' },
+  'Hillside Road': { x: 440, y: 330, type: 'road' },
   
   // Central Bloxburg Town
-  'Bloxburg Town': { x: 550, y: 450, type: 'commercial' },
-  'Pizza Place': { x: 570, y: 470, type: 'restaurant' },
-  'Bloxburg Elementary': { x: 540, y: 430, type: 'school' },
-  'City Hall': { x: 520, y: 460, type: 'government' },
-  'Water Tower': { x: 560, y: 440, type: 'infrastructure' },
-  'Bloxburg Town Exit': { x: 580, y: 480, type: 'transport' },
+  'Bloxburg Town': { x: 480, y: 380, type: 'commercial' },
+  'Pizza Place': { x: 500, y: 400, type: 'restaurant' },
+  'Bloxburg Elementary': { x: 460, y: 370, type: 'school' },
+  'City Hall': { x: 440, y: 390, type: 'government' },
+  'Water Tower': { x: 520, y: 360, type: 'infrastructure' },
+  'Bloxburg Blvd': { x: 480, y: 420, type: 'road' },
   
-  // Riverside Estates
-  'Riverside Estates': { x: 380, y: 520, type: 'residential' },
-  'Riverside Estates Parking': { x: 400, y: 540, type: 'parking' },
-  'Riverside Park': { x: 420, y: 480, type: 'park' },
-  'Creepius St': { x: 360, y: 500, type: 'street' },
+  // Riverside Estates (Southwest)
+  'Riverside Estates': { x: 320, y: 420, type: 'residential' },
+  'Riverside Park': { x: 360, y: 400, type: 'park' },
+  'HWY Exit': { x: 280, y: 440, type: 'highway' },
+  'Welcome to Bloxburg Sign': { x: 200, y: 480, type: 'landmark' },
+  'Wind Turbines West': { x: 160, y: 380, type: 'infrastructure' },
+  'Telecom Mast Central': { x: 280, y: 360, type: 'infrastructure' },
   
-  // Bloxy Acres
-  'Bloxy Acres': { x: 650, y: 450, type: 'residential' },
-  'Bloxy Acres Parking 1': { x: 630, y: 470, type: 'parking' },
-  'Bloxy Acres Parking 2': { x: 670, y: 470, type: 'parking' },
-  'Bloxy Acres Parking 3': { x: 650, y: 490, type: 'parking' },
-  'Bloxy Acres Parking 4': { x: 630, y: 510, type: 'parking' },
-  'Billygoat St': { x: 620, y: 460, type: 'street' },
+  // Bloxy Acres (Central-East)
+  'Bloxy Acres': { x: 580, y: 380, type: 'residential' },
+  'Bloxy Acres Main': { x: 560, y: 400, type: 'residential' },
+  'Bloxy Acres North': { x: 600, y: 360, type: 'residential' },
+  'Unnamed Lake': { x: 540, y: 420, type: 'water' },
   
-  // Sunset Pointe
-  'Sunset Pointe': { x: 720, y: 580, type: 'residential' },
-  'Sunset Pointe Parking 1': { x: 700, y: 600, type: 'parking' },
-  'Sunset Pointe Parking 2': { x: 740, y: 600, type: 'parking' },
-  'Ferris Wheel': { x: 740, y: 570, type: 'landmark' },
-  'Pier Parking': { x: 720, y: 620, type: 'parking' },
+  // Sunset Pointe (Southeast)
+  'Sunset Pointe': { x: 680, y: 520, type: 'residential' },
+  'Ferris Wheel': { x: 700, y: 540, type: 'amusement' },
+  'Pier Parking': { x: 720, y: 560, type: 'parking' },
+  'Sunset Pointe Beach': { x: 660, y: 580, type: 'beach' },
   
   // Ocean Avenue Area
-  'Ocean Avenue': { x: 520, y: 580, type: 'street' },
-  'Ocean Avenue Bus Stop': { x: 500, y: 590, type: 'transport' },
+  'Ocean Avenue': { x: 440, y: 520, type: 'road' },
+  'Ocean Avenue Bridge': { x: 480, y: 540, type: 'bridge' },
+  'Bus Stop Ocean': { x: 420, y: 540, type: 'transport' },
   
-  // Cape Beacon
-  'Cape Beacon': { x: 200, y: 650, type: 'landmark' },
-  'Cape Beacon Bus Stop': { x: 220, y: 630, type: 'transport' },
+  // Cape Beacon (Southwest coast)
+  'Cape Beacon': { x: 160, y: 580, type: 'lighthouse' },
+  'Bus Stop Cape': { x: 180, y: 560, type: 'transport' },
+  'Cape Beacon Beach': { x: 140, y: 600, type: 'beach' },
   
-  // Highway and Major Roads
-  'HWY Exit': { x: 350, y: 520, type: 'transport' },
-  'Innerloop HWY (North)': { x: 400, y: 380, type: 'highway' },
-  'Innerloop HWY (East)': { x: 620, y: 420, type: 'highway' },
-  'Innerloop HWY (South)': { x: 500, y: 520, type: 'highway' },
-  'Innerloop HWY (West)': { x: 320, y: 450, type: 'highway' },
+  // Additional Roads and Intersections
+  'Mountain Road': { x: 220, y: 200, type: 'road' },
+  'Pinewood Bypass': { x: 320, y: 180, type: 'road' },
+  'Innerloop North': { x: 400, y: 280, type: 'highway' },
+  'Innerloop East': { x: 580, y: 320, type: 'highway' },
+  'Innerloop South': { x: 440, y: 480, type: 'highway' },
+  'Innerloop West': { x: 280, y: 400, type: 'highway' },
   
-  // Infrastructure
-  'Telecom Mast (Central)': { x: 340, y: 420, type: 'infrastructure' },
-  'Wind Turbines (West)': { x: 200, y: 450, type: 'infrastructure' },
-  'Welcome to Bloxburg Sign': { x: 250, y: 550, type: 'landmark' },
-  
-  // Mountain Roads and Paths
-  'Mountain Road': { x: 250, y: 300, type: 'street' },
-  'Unnamed Road (Mountain)': { x: 300, y: 250, type: 'street' },
-  'Pinewood Bypass': { x: 350, y: 200, type: 'street' },
-  
-  // Additional Roads
-  'Hillside Road': { x: 480, y: 400, type: 'street' },
-  'Country Road': { x: 750, y: 350, type: 'street' },
-  'Unnamed Lake Road': { x: 520, y: 280, type: 'street' }
+  // Parking Areas (marked with P in original map)
+  'Lakeview Heights Parking': { x: 440, y: 280, type: 'parking' },
+  'Riverside Estates Parking': { x: 340, y: 440, type: 'parking' },
+  'Bloxy Acres Parking 1': { x: 560, y: 420, type: 'parking' },
+  'Bloxy Acres Parking 2': { x: 600, y: 420, type: 'parking' },
+  'Bloxy Acres Parking 3': { x: 580, y: 440, type: 'parking' },
+  'Bloxy Acres Parking 4': { x: 620, y: 440, type: 'parking' },
+  'Sunset Pointe Parking 1': { x: 660, y: 540, type: 'parking' },
+  'Sunset Pointe Parking 2': { x: 700, y: 520, type: 'parking' }
 };
 
-// Comprehensive road network based on actual map
+// Accurate road network based on the simplified map's visible connections
 const ROAD_NETWORK = {
-  // Mountain area connections
-  'Peak Mountain': ['Peak Camp', 'Meh-Meh Falls', 'Mountain Road'],
-  'Peak Camp': ['Peak Mountain', 'Observatory Overlook', 'Mountain Road Bus Stop'],
-  'Meh-Meh Falls': ['Peak Mountain', 'Pinewood Bypass', 'Unnamed Road (Mountain)', 'Lakeview Heights'],
-  'Observatory Overlook': ['Peak Camp', 'Wind Turbines (West)', 'HWY Exit', 'Mountain Road Bus Stop'],
-  'Mountain Road Bus Stop': ['Peak Camp', 'Observatory Overlook', 'Mountain Road'],
-  'Mountain Road': ['Peak Mountain', 'Mountain Road Bus Stop', 'Unnamed Road (Mountain)'],
-  'Unnamed Road (Mountain)': ['Meh-Meh Falls', 'Mountain Road', 'Pinewood Bypass'],
-  'Pinewood Bypass': ['Meh-Meh Falls', 'Unnamed Road (Mountain)', 'Unnamed Lake Road'],
+  // Mountain region connections
+  'Peak Mountain': ['Peak Camp', 'Bloxburg Cave', 'Mountain Road'],
+  'Peak Camp': ['Peak Mountain', 'Meh-Meh Falls', 'Observatory Overlook'],
+  'Meh-Meh Falls': ['Peak Camp', 'Pinewood Bypass', 'Lakeview Heights'],
+  'Observatory Overlook': ['Peak Camp', 'Wind Turbines West', 'Telecom Mast Central'],
+  'Bloxburg Cave': ['Peak Mountain', 'Mountain Road'],
+  'Mountain Road': ['Peak Mountain', 'Bloxburg Cave', 'Pinewood Bypass'],
+  'Pinewood Bypass': ['Meh-Meh Falls', 'Mountain Road', 'Innerloop North'],
   
-  // Lake and central connections
-  'Lakeview Heights': ['Meh-Meh Falls', 'Lakeview Heights Parking', 'Glider Spot', 'Bloxburg Town', 'Unnamed Lake Road'],
-  'Lakeview Heights Parking': ['Lakeview Heights', 'Glider Spot'],
-  'Glider Spot': ['Lakeview Heights', 'Lakeview Heights Parking', 'Hillside Road', 'Bloxburg Town'],
-  'Unnamed Lake Road': ['Pinewood Bypass', 'Lakeview Heights', 'Greenfield Plains'],
+  // Greenfield Plains connections
+  'Greenfield Plains': ['Mountain Bike Stand', 'Telecom Mast', 'Innerloop East', 'Bloxy Acres North'],
+  'Mountain Bike Stand': ['Greenfield Plains', 'Wind Turbines', 'Country Road'],
+  'Telecom Mast': ['Greenfield Plains', 'Wind Turbines'],
+  'Wind Turbines': ['Telecom Mast', 'Mountain Bike Stand', 'Country Road'],
+  'Country Road': ['Mountain Bike Stand', 'Wind Turbines', 'Innerloop East'],
   
-  // Greenfield Plains area
-  'Greenfield Plains': ['Unnamed Lake Road', 'Mountain Bike Stand', 'Telecom Mast (Plains)', 'Innerloop HWY (East)', 'Bloxy Acres'],
-  'Mountain Bike Stand': ['Greenfield Plains', 'Country Road'],
-  'Telecom Mast (Plains)': ['Greenfield Plains', 'Wind Turbines (Plains)'],
-  'Wind Turbines (Plains)': ['Telecom Mast (Plains)', 'Country Road'],
-  'Country Road': ['Mountain Bike Stand', 'Wind Turbines (Plains)', 'Innerloop HWY (East)'],
+  // Lake area connections
+  'Lakeview Heights': ['Meh-Meh Falls', 'Lakeview Heights Parking', 'Glider Spot', 'Bloxburg Town', 'Innerloop North'],
+  'Lakeview Heights Parking': ['Lakeview Heights'],
+  'Glider Spot': ['Lakeview Heights', 'Hillside Road', 'Bloxburg Town'],
+  'Hillside Road': ['Glider Spot', 'Riverside Park', 'Innerloop North'],
   
-  // Bloxburg Town central area
-  'Bloxburg Town': ['Lakeview Heights', 'Glider Spot', 'Pizza Place', 'Bloxburg Elementary', 'City Hall', 'Water Tower', 'Bloxburg Town Exit', 'Hillside Road', 'Innerloop HWY (East)'],
-  'Pizza Place': ['Bloxburg Town', 'Bloxy Acres', 'Billygoat St'],
+  // Central town connections
+  'Bloxburg Town': ['Lakeview Heights', 'Glider Spot', 'Pizza Place', 'Bloxburg Elementary', 'City Hall', 'Water Tower', 'Bloxburg Blvd', 'Innerloop East'],
+  'Pizza Place': ['Bloxburg Town', 'Bloxy Acres', 'Bloxburg Blvd'],
   'Bloxburg Elementary': ['Bloxburg Town', 'City Hall'],
-  'City Hall': ['Bloxburg Town', 'Bloxburg Elementary', 'Water Tower'],
+  'City Hall': ['Bloxburg Town', 'Bloxburg Elementary', 'Water Tower', 'Riverside Park'],
   'Water Tower': ['Bloxburg Town', 'City Hall'],
-  'Bloxburg Town Exit': ['Bloxburg Town', 'Innerloop HWY (South)'],
-  'Hillside Road': ['Glider Spot', 'Bloxburg Town', 'Riverside Park', 'Innerloop HWY (North)'],
+  'Bloxburg Blvd': ['Bloxburg Town', 'Pizza Place', 'Innerloop South'],
   
-  // Innerloop Highway system
-  'Innerloop HWY (North)': ['Hillside Road', 'Telecom Mast (Central)', 'Innerloop HWY (West)', 'Innerloop HWY (East)'],
-  'Innerloop HWY (East)': ['Innerloop HWY (North)', 'Bloxburg Town', 'Greenfield Plains', 'Country Road', 'Bloxy Acres', 'Innerloop HWY (South)'],
-  'Innerloop HWY (South)': ['Innerloop HWY (East)', 'Bloxburg Town Exit', 'Ocean Avenue', 'Sunset Pointe', 'Innerloop HWY (West)'],
-  'Innerloop HWY (West)': ['Innerloop HWY (South)', 'HWY Exit', 'Wind Turbines (West)', 'Telecom Mast (Central)', 'Innerloop HWY (North)'],
+  // Innerloop Highway system (main highway ring)
+  'Innerloop North': ['Pinewood Bypass', 'Lakeview Heights', 'Hillside Road', 'Telecom Mast Central', 'Innerloop West', 'Innerloop East'],
+  'Innerloop East': ['Innerloop North', 'Greenfield Plains', 'Country Road', 'Bloxburg Town', 'Bloxy Acres', 'Innerloop South'],
+  'Innerloop South': ['Innerloop East', 'Bloxburg Blvd', 'Ocean Avenue', 'Sunset Pointe', 'Innerloop West'],
+  'Innerloop West': ['Innerloop South', 'HWY Exit', 'Wind Turbines West', 'Telecom Mast Central', 'Innerloop North'],
   
   // Riverside area
-  'Riverside Estates': ['Riverside Estates Parking', 'Riverside Park', 'HWY Exit', 'Creepius St'],
+  'Riverside Estates': ['Riverside Estates Parking', 'Riverside Park', 'HWY Exit'],
   'Riverside Estates Parking': ['Riverside Estates'],
-  'Riverside Park': ['Riverside Estates', 'Hillside Road', 'Telecom Mast (Central)'],
-  'Creepius St': ['Riverside Estates', 'HWY Exit'],
+  'Riverside Park': ['Riverside Estates', 'City Hall', 'Hillside Road', 'Telecom Mast Central'],
+  'HWY Exit': ['Riverside Estates', 'Welcome to Bloxburg Sign', 'Wind Turbines West', 'Innerloop West'],
+  'Welcome to Bloxburg Sign': ['HWY Exit', 'Cape Beacon'],
+  'Wind Turbines West': ['Observatory Overlook', 'HWY Exit', 'Innerloop West'],
+  'Telecom Mast Central': ['Observatory Overlook', 'Riverside Park', 'Innerloop North', 'Innerloop West'],
   
   // Bloxy Acres area
-  'Bloxy Acres': ['Pizza Place', 'Greenfield Plains', 'Innerloop HWY (East)', 'Billygoat St', 'Bloxy Acres Parking 1', 'Bloxy Acres Parking 2', 'Bloxy Acres Parking 3', 'Bloxy Acres Parking 4'],
-  'Bloxy Acres Parking 1': ['Bloxy Acres', 'Billygoat St'],
-  'Bloxy Acres Parking 2': ['Bloxy Acres', 'Billygoat St'],
-  'Bloxy Acres Parking 3': ['Bloxy Acres'],
-  'Bloxy Acres Parking 4': ['Bloxy Acres'],
-  'Billygoat St': ['Pizza Place', 'Bloxy Acres', 'Bloxy Acres Parking 1', 'Bloxy Acres Parking 2'],
+  'Bloxy Acres': ['Pizza Place', 'Bloxy Acres Main', 'Bloxy Acres North', 'Bloxy Acres Parking 1', 'Bloxy Acres Parking 2', 'Innerloop East'],
+  'Bloxy Acres Main': ['Bloxy Acres', 'Bloxy Acres Parking 3', 'Bloxy Acres Parking 4', 'Unnamed Lake'],
+  'Bloxy Acres North': ['Bloxy Acres', 'Greenfield Plains'],
+  'Bloxy Acres Parking 1': ['Bloxy Acres'],
+  'Bloxy Acres Parking 2': ['Bloxy Acres'],
+  'Bloxy Acres Parking 3': ['Bloxy Acres Main'],
+  'Bloxy Acres Parking 4': ['Bloxy Acres Main'],
+  'Unnamed Lake': ['Bloxy Acres Main', 'Ocean Avenue'],
   
   // Sunset Pointe area
-  'Sunset Pointe': ['Innerloop HWY (South)', 'Ferris Wheel', 'Sunset Pointe Parking 1', 'Sunset Pointe Parking 2', 'Pier Parking'],
+  'Sunset Pointe': ['Ferris Wheel', 'Sunset Pointe Parking 1', 'Sunset Pointe Parking 2', 'Sunset Pointe Beach', 'Innerloop South'],
+  'Ferris Wheel': ['Sunset Pointe', 'Pier Parking'],
+  'Pier Parking': ['Ferris Wheel', 'Sunset Pointe Beach'],
+  'Sunset Pointe Beach': ['Sunset Pointe', 'Pier Parking', 'Ocean Avenue Bridge'],
   'Sunset Pointe Parking 1': ['Sunset Pointe'],
-  'Sunset Pointe Parking 2': ['Sunset Pointe', 'Ferris Wheel'],
-  'Ferris Wheel': ['Sunset Pointe', 'Sunset Pointe Parking 2'],
-  'Pier Parking': ['Sunset Pointe', 'Ocean Avenue'],
+  'Sunset Pointe Parking 2': ['Sunset Pointe'],
   
   // Ocean Avenue area
-  'Ocean Avenue': ['Pier Parking', 'Ocean Avenue Bus Stop', 'Innerloop HWY (South)', 'Cape Beacon Bus Stop'],
-  'Ocean Avenue Bus Stop': ['Ocean Avenue'],
+  'Ocean Avenue': ['Unnamed Lake', 'Ocean Avenue Bridge', 'Bus Stop Ocean', 'Innerloop South'],
+  'Ocean Avenue Bridge': ['Ocean Avenue', 'Sunset Pointe Beach', 'Cape Beacon'],
+  'Bus Stop Ocean': ['Ocean Avenue', 'Cape Beacon'],
   
   // Cape Beacon area
-  'Cape Beacon': ['Cape Beacon Bus Stop', 'Welcome to Bloxburg Sign'],
-  'Cape Beacon Bus Stop': ['Cape Beacon', 'Ocean Avenue'],
-  'Welcome to Bloxburg Sign': ['Cape Beacon', 'HWY Exit'],
-  
-  // Infrastructure connections
-  'HWY Exit': ['Observatory Overlook', 'Riverside Estates', 'Creepius St', 'Welcome to Bloxburg Sign', 'Wind Turbines (West)', 'Innerloop HWY (West)'],
-  'Telecom Mast (Central)': ['Riverside Park', 'Innerloop HWY (North)', 'Innerloop HWY (West)'],
-  'Wind Turbines (West)': ['Observatory Overlook', 'HWY Exit', 'Innerloop HWY (West)']
+  'Cape Beacon': ['Ocean Avenue Bridge', 'Bus Stop Ocean', 'Bus Stop Cape', 'Cape Beacon Beach', 'Welcome to Bloxburg Sign'],
+  'Bus Stop Cape': ['Cape Beacon'],
+  'Cape Beacon Beach': ['Cape Beacon']
 };
 
-// A* pathfinding algorithm with improved heuristics
+// Calculate distance between two locations
+function calculateDistance(loc1, loc2) {
+  if (!LOCATIONS[loc1] || !LOCATIONS[loc2]) return Infinity;
+  const dx = LOCATIONS[loc1].x - LOCATIONS[loc2].x;
+  const dy = LOCATIONS[loc1].y - LOCATIONS[loc2].y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// A* pathfinding algorithm
 function findPath(start, end) {
   if (start === end) return [start];
   if (!ROAD_NETWORK[start] || !ROAD_NETWORK[end]) return null;
@@ -170,13 +178,11 @@ function findPath(start, end) {
   const fScore = { [start]: calculateDistance(start, end) };
   
   while (openSet.length > 0) {
-    // Find the node with lowest fScore
     let current = openSet.reduce((a, b) => 
       (fScore[a] || Infinity) < (fScore[b] || Infinity) ? a : b
     );
     
     if (current === end) {
-      // Reconstruct path
       const path = [current];
       while (cameFrom[current]) {
         current = cameFrom[current];
@@ -203,18 +209,10 @@ function findPath(start, end) {
     }
   }
   
-  return null; // No path found
+  return null;
 }
 
-// Calculate distance between two points
-function calculateDistance(loc1, loc2) {
-  if (!LOCATIONS[loc1] || !LOCATIONS[loc2]) return Infinity;
-  const dx = LOCATIONS[loc1].x - LOCATIONS[loc2].x;
-  const dy = LOCATIONS[loc1].y - LOCATIONS[loc2].y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-// Calculate total route distance and estimated time
+// Calculate route info
 function calculateRouteInfo(path) {
   if (!path || path.length < 2) return { distance: 0, time: 0 };
   
@@ -223,28 +221,21 @@ function calculateRouteInfo(path) {
     totalDistance += calculateDistance(path[i], path[i + 1]);
   }
   
-  // Convert pixels to approximate game units (more realistic scaling)
-  const gameDistance = Math.round(totalDistance / 5);
-  const estimatedTime = Math.round(gameDistance / 30 * 60); // ~30 units per minute
+  const gameDistance = Math.round(totalDistance / 3);
+  const estimatedTime = Math.round(gameDistance / 25 * 60);
   
   return { distance: gameDistance, time: estimatedTime };
 }
 
-// Get location type icon
+// Get icon for location type
 function getLocationIcon(type) {
   const icons = {
-    'landmark': '🏔️',
-    'residential': '🏘️',
-    'commercial': '🏪',
-    'restaurant': '🍕',
-    'school': '🏫',
-    'government': '🏛️',
-    'infrastructure': '📡',
-    'transport': '🚌',
-    'parking': '🅿️',
-    'park': '🌳',
-    'street': '🛣️',
-    'highway': '🛣️'
+    'mountain': '🏔️', 'camping': '🏕️', 'waterfall': '💧', 'observatory': '🔭', 'cave': '🕳️',
+    'residential': '🏘️', 'recreation': '🎮', 'infrastructure': '📡', 'road': '🛣️',
+    'commercial': '🏪', 'restaurant': '🍕', 'school': '🏫', 'government': '🏛️',
+    'park': '🌳', 'highway': '🛣️', 'landmark': '📍', 'water': '🌊',
+    'amusement': '🎡', 'parking': '🅿️', 'beach': '🏖️', 'transport': '🚌',
+    'lighthouse': '🗼', 'bridge': '🌉'
   };
   return icons[type] || '📍';
 }
@@ -261,7 +252,6 @@ function BloxburgGPS() {
 
   const locationList = Object.keys(LOCATIONS).sort();
   
-  // Group locations by type
   const locationsByType = locationList.reduce((acc, location) => {
     const type = LOCATIONS[location].type;
     if (!acc[type]) acc[type] = [];
@@ -276,9 +266,8 @@ function BloxburgGPS() {
   const handleMapClick = (event) => {
     const rect = mapRef.current.getBoundingClientRect();
     const x = (event.clientX - rect.left) * (800 / rect.width);
-    const y = (event.clientY - rect.top) * (700 / rect.height);
+    const y = (event.clientY - rect.top) * (650 / rect.height);
     
-    // Find the closest location to the click
     let closestLocation = null;
     let minDistance = Infinity;
     
@@ -287,7 +276,7 @@ function BloxburgGPS() {
         Math.pow(x - coords.x, 2) + Math.pow(y - coords.y, 2)
       );
       
-      if (distance < minDistance && distance < 30) { // 30px tolerance
+      if (distance < minDistance && distance < 25) {
         minDistance = distance;
         closestLocation = name;
       }
@@ -299,7 +288,6 @@ function BloxburgGPS() {
       } else if (!destination) {
         setDestination(closestLocation);
       } else {
-        // Reset and set new current location
         setCurrentLocation(closestLocation);
         setDestination('');
         setRoute([]);
@@ -314,7 +302,7 @@ function BloxburgGPS() {
         setRoute(path);
         setRouteInfo(calculateRouteInfo(path));
       } else {
-        alert('No route found between these locations!');
+        alert('No route found! Try selecting locations connected by roads.');
       }
     }
   };
@@ -333,24 +321,25 @@ function BloxburgGPS() {
     for (let i = 0; i < route.length - 1; i++) {
       const from = route[i];
       const to = route[i + 1];
-      const distance = Math.round(calculateDistance(from, to) / 5);
-      const fromType = LOCATIONS[from].type;
+      const distance = Math.round(calculateDistance(from, to) / 3);
       const toType = LOCATIONS[to].type;
       
       let instruction = '';
-      if (fromType === 'highway' || toType === 'highway') {
+      if (toType === 'highway') {
         instruction = `Take highway to ${to}`;
       } else if (toType === 'parking') {
         instruction = `Park at ${to}`;
       } else if (toType === 'transport') {
-        instruction = `Head to ${to}`;
+        instruction = `Head to bus stop: ${to}`;
+      } else if (toType === 'road') {
+        instruction = `Continue on ${to}`;
       } else {
-        instruction = `Continue to ${to}`;
+        instruction = `Navigate to ${to}`;
       }
       
       directions.push(`${i + 1}. ${instruction} (${distance} units)`);
     }
-    directions.push(`${route.length}. You have arrived at ${destination}! ${getLocationIcon(LOCATIONS[destination].type)}`);
+    directions.push(`${route.length}. Arrived at ${destination}! ${getLocationIcon(LOCATIONS[destination].type)}`);
     
     return directions;
   };
@@ -367,7 +356,7 @@ function BloxburgGPS() {
       <div className="bg-slate-900 text-white p-4 shadow-lg">
         <h1 className="text-3xl font-bold text-center flex items-center justify-center gap-3">
           <span className="text-blue-400">🗺️</span>
-          Bloxburg GPS Navigator
+          Bloxburg GPS Navigator - Real Map Edition
           <span className="text-green-400">📍</span>
         </h1>
       </div>
@@ -465,13 +454,13 @@ function BloxburgGPS() {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">All Locations</option>
-                <option value="landmark">🏔️ Landmarks</option>
                 <option value="residential">🏘️ Residential</option>
                 <option value="commercial">🏪 Commercial</option>
-                <option value="restaurant">🍕 Restaurants</option>
-                <option value="transport">🚌 Transport</option>
-                <option value="parking">🅿️ Parking</option>
+                <option value="restaurant">🍕 Restaurant</option>
                 <option value="highway">🛣️ Highways</option>
+                <option value="parking">🅿️ Parking</option>
+                <option value="recreation">🎮 Recreation</option>
+                <option value="transport">🚌 Transport</option>
               </select>
             </div>
           </div>
@@ -492,10 +481,10 @@ function BloxburgGPS() {
               🗑️ Clear
             </button>
             <button
-              onClick={() => setMapMode(mapMode === 'detailed' ? 'simplified' : 'detailed')}
+              onClick={() => setMapMode(mapMode === 'detailed' ? 'roads' : 'detailed')}
               className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
             >
-              🔄 {mapMode === 'detailed' ? 'Simplified' : 'Detailed'} View
+              🔄 {mapMode === 'detailed' ? 'Roads Only' : 'Detailed'} View
             </button>
           </div>
 
@@ -504,71 +493,45 @@ function BloxburgGPS() {
             <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <h3 className="text-lg font-semibold text-green-800 mb-2">🎯 Route Found!</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Distance:</span> {routeInfo.distance} units
-                </div>
-                <div>
-                  <span className="font-medium">Est. Time:</span> {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s
-                </div>
-                <div>
-                  <span className="font-medium">Stops:</span> {route.length} locations
-                </div>
-                <div>
-                  <span className="font-medium">Route Type:</span> Optimal
-                </div>
+                <div><span className="font-medium">Distance:</span> {routeInfo.distance} units</div>
+                <div><span className="font-medium">Est. Time:</span> {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s</div>
+                <div><span className="font-medium">Stops:</span> {route.length} locations</div>
+                <div><span className="font-medium">Type:</span> Optimal Path</div>
               </div>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Map */}
-          <div className="xl:col-span-3">
+          <div className="xl:col-span-2">
             <div className="bg-white rounded-lg shadow-lg p-4">
               <h2 className="text-xl font-bold mb-4 text-center">
-                {mapMode === 'detailed' ? '🗺️ Detailed Bloxburg Map' : '🛣️ Road Network View'}
+                🗺️ Real Bloxburg Map - {mapMode === 'detailed' ? 'Full View' : 'Roads Only'}
               </h2>
               <div className="relative">
                 <svg
                   ref={mapRef}
                   width="800"
-                  height="700"
-                  viewBox="0 0 800 700"
-                  className="w-full h-auto border-2 border-gray-300 rounded-lg cursor-pointer bg-gradient-to-br from-blue-50 to-green-50"
+                  height="650"
+                  viewBox="0 0 800 650"
+                  className="w-full h-auto border-2 border-gray-300 rounded-lg cursor-pointer"
+                  style={{
+                    backgroundImage: mapMode === 'detailed' 
+                      ? `url(https://preview.redd.it/unofficial-new-bloxburg-map-v0-3qpojfsgnz9f1.jpeg?width=1080&crop=smart&auto=webp&s=fabf35b7c84ae9c556fea6f67df59aa0067f1cb2)`
+                      : 'linear-gradient(135deg, #e3f2fd 0%, #e8f5e8 100%)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
                   onClick={handleMapClick}
                 >
-                  {/* Detailed terrain features */}
-                  {mapMode === 'detailed' && (
-                    <>
-                      {/* Mountain ranges */}
-                      <path d="M 50 100 Q 200 50 350 150 Q 250 200 150 180 Q 100 150 50 100" fill="#8B7355" opacity="0.7" />
-                      <path d="M 100 120 Q 180 80 280 130 Q 220 160 160 150 Q 130 135 100 120" fill="#A0522D" opacity="0.6" />
-                      
-                      {/* Lake with more realistic shape */}
-                      <ellipse cx="480" cy="320" rx="90" ry="50" fill="#4FC3F7" opacity="0.8" />
-                      <ellipse cx="490" cy="310" rx="70" ry="35" fill="#29B6F6" opacity="0.6" />
-                      
-                      {/* Greenfield Plains */}
-                      <ellipse cx="680" cy="280" rx="120" ry="90" fill="#81C784" opacity="0.7" />
-                      <ellipse cx="690" cy="270" rx="100" ry="70" fill="#66BB6A" opacity="0.5" />
-                      
-                      {/* Beach and coastal areas */}
-                      <path d="M 650 550 Q 750 530 800 580 L 800 700 L 650 700 Z" fill="#FFEB3B" opacity="0.5" />
-                      <path d="M 150 600 Q 250 580 350 620 Q 300 650 200 640 Q 175 620 150 600" fill="#FFEB3B" opacity="0.4" />
-                      
-                      {/* Forest areas */}
-                      <circle cx="200" cy="400" r="60" fill="#4CAF50" opacity="0.4" />
-                      <circle cx="320" cy="380" r="40" fill="#388E3C" opacity="0.4" />
-                    </>
-                  )}
-
                   {/* Road network */}
                   {Object.entries(ROAD_NETWORK).map(([from, connections]) => 
                     connections.map(to => {
                       if (!LOCATIONS[from] || !LOCATIONS[to]) return null;
                       const start = LOCATIONS[from];
                       const end = LOCATIONS[to];
-                      const isHighway = from.includes('HWY') || to.includes('HWY') || from.includes('Innerloop') || to.includes('Innerloop');
+                      const isHighway = from.includes('Innerloop') || to.includes('Innerloop') || from.includes('HWY') || to.includes('HWY');
                       const isInRoute = route.includes(from) && route.includes(to) && 
                         Math.abs(route.indexOf(from) - route.indexOf(to)) === 1;
                       
@@ -579,10 +542,10 @@ function BloxburgGPS() {
                           y1={start.y}
                           x2={end.x}
                           y2={end.y}
-                          stroke={isInRoute ? "#FF4444" : isHighway ? "#666" : "#999"}
+                          stroke={isInRoute ? "#FF0000" : isHighway ? "#444" : "#666"}
                           strokeWidth={isInRoute ? "6" : isHighway ? "4" : "2"}
-                          strokeDasharray={isHighway && !isInRoute ? "8,4" : "none"}
-                          opacity={isInRoute ? "1" : "0.6"}
+                          strokeDasharray={isHighway && !isInRoute ? "6,3" : "none"}
+                          opacity={isInRoute ? "1" : "0.7"}
                         />
                       );
                     })
@@ -600,10 +563,10 @@ function BloxburgGPS() {
                     
                     if (isStart) {
                       markerColor = '#4CAF50';
-                      markerSize = 8;
+                      markerSize = 10;
                     } else if (isEnd) {
                       markerColor = '#F44336';
-                      markerSize = 8;
+                      markerSize = 10;
                     } else if (isInRoute) {
                       markerColor = '#FF9800';
                       markerSize = 6;
@@ -613,8 +576,8 @@ function BloxburgGPS() {
                     } else if (type === 'parking') {
                       markerColor = '#607D8B';
                       markerSize = 3;
-                    } else if (type === 'landmark') {
-                      markerColor = '#795548';
+                    } else if (type === 'restaurant') {
+                      markerColor = '#FF5722';
                       markerSize = 5;
                     }
                     
@@ -626,36 +589,33 @@ function BloxburgGPS() {
                           r={markerSize}
                           fill={markerColor}
                           stroke="white"
-                          strokeWidth="1"
-                          className="hover:r-6 transition-all cursor-pointer"
+                          strokeWidth="2"
+                          className="hover:r-8 transition-all cursor-pointer"
                         />
-                        {(isStart || isEnd || isInRoute || type === 'landmark' || type === 'restaurant') && (
+                        {(isStart || isEnd || isInRoute || type === 'restaurant' || type === 'school' || type === 'amusement') && (
                           <text
                             x={coords.x}
-                            y={coords.y - markerSize - 3}
+                            y={coords.y - markerSize - 2}
                             textAnchor="middle"
-                            className="text-xs font-bold fill-gray-800 pointer-events-none"
-                            style={{ fontSize: `${Math.max(8, markerSize)}px` }}
+                            className="text-xs font-bold fill-gray-900 pointer-events-none"
+                            style={{ 
+                              fontSize: `${Math.max(7, markerSize)}px`,
+                              textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                            }}
                           >
-                            {name.length > 15 ? name.substring(0, 12) + '...' : name}
+                            {name.length > 12 ? name.substring(0, 10) + '...' : name}
                           </text>
-                        )}
-                        {isStart && (
-                          <text x={coords.x} y={coords.y + 20} textAnchor="middle" className="text-xs font-bold fill-green-600">START</text>
-                        )}
-                        {isEnd && (
-                          <text x={coords.x} y={coords.y + 20} textAnchor="middle" className="text-xs font-bold fill-red-600">END</text>
                         )}
                       </g>
                     );
                   })}
                 </svg>
                 
-                {/* Enhanced Legend */}
+                {/* Legend */}
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                    <span>Start Location</span>
+                    <span>Start</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-red-500 rounded-full"></div>
@@ -663,7 +623,7 @@ function BloxburgGPS() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-1 bg-red-500"></div>
-                    <span>Active Route</span>
+                    <span>Route</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-1 bg-gray-600" style={{borderTop: '2px dashed'}}></div>
@@ -682,9 +642,9 @@ function BloxburgGPS() {
               {route.length > 0 ? (
                 <div className="space-y-3">
                   <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                    <div className="text-sm font-medium">📍 Route Overview</div>
+                    <div className="text-sm font-medium">📍 Route: {route[0]} → {route[route.length - 1]}</div>
                     <div className="text-xs text-gray-600 mt-1">
-                      {route[0]} → {route[route.length - 1]}
+                      Via {route.length - 2} waypoints
                     </div>
                   </div>
                   
@@ -711,23 +671,21 @@ function BloxburgGPS() {
                     <div className="space-y-1 text-sm">
                       <div>🚶 Distance: {routeInfo.distance} units</div>
                       <div>⏱️ Time: {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s</div>
-                      <div>📍 Waypoints: {route.length}</div>
-                      <div>🛣️ Via: {route.filter(loc => LOCATIONS[loc]?.type === 'highway').length} highways</div>
+                      <div>📍 Stops: {route.length}</div>
+                      <div>🛣️ Highways: {route.filter(loc => LOCATIONS[loc]?.type === 'highway').length}</div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center text-gray-500 py-8">
                   <div className="text-4xl mb-4">🗺️</div>
-                  <p className="mb-2">Select locations to navigate</p>
-                  <p className="text-sm">💡 Click on the map or use the search above</p>
-                  
+                  <p className="mb-2">Click locations on the map to navigate</p>
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
-                    <h4 className="font-semibold text-blue-800 mb-2">Quick Destinations:</h4>
+                    <h4 className="font-semibold text-blue-800 mb-2">Popular Destinations:</h4>
                     <div className="space-y-1 text-xs">
-                      <div>🍕 Pizza Place (Central)</div>
+                      <div>🍕 Pizza Place</div>
                       <div>🏫 Bloxburg Elementary</div>
-                      <div>🎡 Ferris Wheel (Sunset Pointe)</div>
+                      <div>🎡 Ferris Wheel</div>
                       <div>🏔️ Peak Mountain</div>
                       <div>🌳 Riverside Park</div>
                     </div>
