@@ -149,25 +149,6 @@ function BloxburgGPS() {
         </div>
       )}
 
-      {/* Instructions overlay */}
-      {!startCoords && (
-        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-20">
-          <div className="bg-white rounded-lg shadow-xl p-6 text-center">
-            <div className="text-2xl mb-2">📍</div>
-            <div className="font-medium">Click anywhere to set your starting point</div>
-          </div>
-        </div>
-      )}
-
-      {startCoords && !endCoords && (
-        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-20">
-          <div className="bg-white rounded-lg shadow-xl p-6 text-center">
-            <div className="text-2xl mb-2">🎯</div>
-            <div className="font-medium">Click anywhere to set your destination</div>
-          </div>
-        </div>
-      )}
-
       {/* Full screen map */}
       <div className="w-full h-full">
         <svg
