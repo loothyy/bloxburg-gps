@@ -3,306 +3,328 @@ import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Road points traced from your actual hand-drawn map
+// Road points traced from YOUR actual hand-drawn map at https://i.imgur.com/ySLMbQS.png
+// Following the curves and paths exactly as you drew them
 const ROAD_POINTS = {
-  // Main outer loop (red roads) - tracing your drawing clockwise from top-left
-  'outer1': { x: 120, y: 180, type: 'road' },
-  'outer2': { x: 160, y: 160, type: 'road' },
-  'outer3': { x: 200, y: 140, type: 'road' },
-  'outer4': { x: 250, y: 120, type: 'road' },
-  'outer5': { x: 300, y: 110, type: 'road' },
-  'outer6': { x: 350, y: 105, type: 'road' },
-  'outer7': { x: 400, y: 100, type: 'road' },
-  'outer8': { x: 450, y: 105, type: 'road' },
-  'outer9': { x: 500, y: 110, type: 'road' },
-  'outer10': { x: 550, y: 120, type: 'road' },
-  'outer11': { x: 600, y: 135, type: 'road' },
-  'outer12': { x: 640, y: 155, type: 'road' },
-  'outer13': { x: 670, y: 180, type: 'road' },
-  'outer14': { x: 690, y: 210, type: 'road' },
-  'outer15': { x: 700, y: 250, type: 'road' },
-  'outer16': { x: 705, y: 290, type: 'road' },
-  'outer17': { x: 700, y: 330, type: 'road' },
-  'outer18': { x: 690, y: 370, type: 'road' },
-  'outer19': { x: 675, y: 400, type: 'road' },
-  'outer20': { x: 650, y: 425, type: 'road' },
-  'outer21': { x: 620, y: 445, type: 'road' },
-  'outer22': { x: 580, y: 460, type: 'road' },
-  'outer23': { x: 540, y: 470, type: 'road' },
-  'outer24': { x: 500, y: 475, type: 'road' },
-  'outer25': { x: 460, y: 480, type: 'road' },
-  'outer26': { x: 420, y: 485, type: 'road' },
-  'outer27': { x: 380, y: 490, type: 'road' },
-  'outer28': { x: 340, y: 485, type: 'road' },
-  'outer29': { x: 300, y: 480, type: 'road' },
-  'outer30': { x: 260, y: 470, type: 'road' },
-  'outer31': { x: 220, y: 455, type: 'road' },
-  'outer32': { x: 185, y: 435, type: 'road' },
-  'outer33': { x: 155, y: 410, type: 'road' },
-  'outer34': { x: 130, y: 380, type: 'road' },
-  'outer35': { x: 115, y: 345, type: 'road' },
-  'outer36': { x: 105, y: 310, type: 'road' },
-  'outer37': { x: 100, y: 275, type: 'road' },
-  'outer38': { x: 105, y: 240, type: 'road' },
-  'outer39': { x: 110, y: 205, type: 'road' },
+  // Green roads (mountain/northern area) - tracing the green curves
+  'g1': { x: 120, y: 60, type: 'dirt' },
+  'g2': { x: 140, y: 50, type: 'dirt' },
+  'g3': { x: 170, y: 45, type: 'dirt' },
+  'g4': { x: 200, y: 50, type: 'dirt' },
+  'g5': { x: 230, y: 60, type: 'dirt' },
+  'g6': { x: 250, y: 75, type: 'dirt' },
+  'g7': { x: 265, y: 95, type: 'dirt' },
+  'g8': { x: 270, y: 120, type: 'dirt' },
+  'g9': { x: 265, y: 145, type: 'dirt' },
+  'g10': { x: 250, y: 165, type: 'dirt' },
+  'g11': { x: 220, y: 180, type: 'dirt' },
+  'g12': { x: 185, y: 185, type: 'dirt' },
+  'g13': { x: 150, y: 180, type: 'dirt' },
+  'g14': { x: 120, y: 165, type: 'dirt' },
+  'g15': { x: 100, y: 140, type: 'dirt' },
+  'g16': { x: 90, y: 110, type: 'dirt' },
+  'g17': { x: 95, y: 85, type: 'dirt' },
+  'g18': { x: 110, y: 70, type: 'dirt' },
 
-  // Inner loop (red roads inside)
-  'inner1': { x: 200, y: 220, type: 'road' },
-  'inner2': { x: 250, y: 200, type: 'road' },
-  'inner3': { x: 300, y: 190, type: 'road' },
-  'inner4': { x: 350, y: 185, type: 'road' },
-  'inner5': { x: 400, y: 180, type: 'road' },
-  'inner6': { x: 450, y: 185, type: 'road' },
-  'inner7': { x: 500, y: 195, type: 'road' },
-  'inner8': { x: 540, y: 210, type: 'road' },
-  'inner9': { x: 570, y: 235, type: 'road' },
-  'inner10': { x: 590, y: 265, type: 'road' },
-  'inner11': { x: 600, y: 300, type: 'road' },
-  'inner12': { x: 595, y: 335, type: 'road' },
-  'inner13': { x: 580, y: 365, type: 'road' },
-  'inner14': { x: 555, y: 390, type: 'road' },
-  'inner15': { x: 525, y: 410, type: 'road' },
-  'inner16': { x: 490, y: 425, type: 'road' },
-  'inner17': { x: 450, y: 435, type: 'road' },
-  'inner18': { x: 410, y: 440, type: 'road' },
-  'inner19': { x: 370, y: 435, type: 'road' },
-  'inner20': { x: 330, y: 425, type: 'road' },
-  'inner21': { x: 295, y: 410, type: 'road' },
-  'inner22': { x: 265, y: 390, type: 'road' },
-  'inner23': { x: 240, y: 365, type: 'road' },
-  'inner24': { x: 220, y: 335, type: 'road' },
-  'inner25': { x: 205, y: 300, type: 'road' },
-  'inner26': { x: 195, y: 265, type: 'road' },
-  'inner27': { x: 190, y: 230, type: 'road' },
+  // Red roads - main highway system following your curves
+  // Outer perimeter red roads
+  'r1': { x: 150, y: 200, type: 'road' },
+  'r2': { x: 180, y: 195, type: 'road' },
+  'r3': { x: 220, y: 200, type: 'road' },
+  'r4': { x: 260, y: 210, type: 'road' },
+  'r5': { x: 300, y: 225, type: 'road' },
+  'r6': { x: 340, y: 245, type: 'road' },
+  'r7': { x: 380, y: 270, type: 'road' },
+  'r8': { x: 420, y: 300, type: 'road' },
+  'r9': { x: 450, y: 335, type: 'road' },
+  'r10': { x: 470, y: 375, type: 'road' },
+  'r11': { x: 480, y: 415, type: 'road' },
+  'r12': { x: 485, y: 455, type: 'road' },
+  'r13': { x: 480, y: 495, type: 'road' },
+  'r14': { x: 470, y: 530, type: 'road' },
+  'r15': { x: 450, y: 560, type: 'road' },
+  'r16': { x: 420, y: 585, type: 'road' },
+  'r17': { x: 385, y: 605, type: 'road' },
+  'r18': { x: 345, y: 620, type: 'road' },
+  'r19': { x: 305, y: 630, type: 'road' },
+  'r20': { x: 265, y: 635, type: 'road' },
+  'r21': { x: 225, y: 630, type: 'road' },
+  'r22': { x: 185, y: 620, type: 'road' },
+  'r23': { x: 150, y: 605, type: 'road' },
+  'r24': { x: 120, y: 580, type: 'road' },
+  'r25': { x: 95, y: 550, type: 'road' },
+  'r26': { x: 75, y: 515, type: 'road' },
+  'r27': { x: 60, y: 475, type: 'road' },
+  'r28': { x: 50, y: 435, type: 'road' },
+  'r29': { x: 45, y: 395, type: 'road' },
+  'r30': { x: 50, y: 355, type: 'road' },
+  'r31': { x: 60, y: 315, type: 'road' },
+  'r32': { x: 80, y: 280, type: 'road' },
+  'r33': { x: 110, y: 250, type: 'road' },
+  'r34': { x: 130, y: 225, type: 'road' },
 
-  // Grid roads in central area (red)
-  'grid1': { x: 280, y: 260, type: 'road' },
-  'grid2': { x: 320, y: 250, type: 'road' },
-  'grid3': { x: 360, y: 245, type: 'road' },
-  'grid4': { x: 400, y: 240, type: 'road' },
-  'grid5': { x: 440, y: 245, type: 'road' },
-  'grid6': { x: 480, y: 255, type: 'road' },
-  'grid7': { x: 280, y: 300, type: 'road' },
-  'grid8': { x: 320, y: 295, type: 'road' },
-  'grid9': { x: 360, y: 290, type: 'road' },
-  'grid10': { x: 400, y: 285, type: 'road' },
-  'grid11': { x: 440, y: 290, type: 'road' },
-  'grid12': { x: 480, y: 300, type: 'road' },
-  'grid13': { x: 280, y: 340, type: 'road' },
-  'grid14': { x: 320, y: 335, type: 'road' },
-  'grid15': { x: 360, y: 330, type: 'road' },
-  'grid16': { x: 400, y: 325, type: 'road' },
-  'grid17': { x: 440, y: 330, type: 'road' },
-  'grid18': { x: 480, y: 340, type: 'road' },
-  'grid19': { x: 280, y: 380, type: 'road' },
-  'grid20': { x: 320, y: 375, type: 'road' },
-  'grid21': { x: 360, y: 370, type: 'road' },
-  'grid22': { x: 400, y: 365, type: 'road' },
-  'grid23': { x: 440, y: 370, type: 'road' },
-  'grid24': { x: 480, y: 380, type: 'road' },
+  // Inner red roads
+  'ir1': { x: 200, y: 280, type: 'road' },
+  'ir2': { x: 240, y: 270, type: 'road' },
+  'ir3': { x: 280, y: 275, type: 'road' },
+  'ir4': { x: 320, y: 285, type: 'road' },
+  'ir5': { x: 360, y: 300, type: 'road' },
+  'ir6': { x: 390, y: 325, type: 'road' },
+  'ir7': { x: 410, y: 355, type: 'road' },
+  'ir8': { x: 420, y: 390, type: 'road' },
+  'ir9': { x: 415, y: 425, type: 'road' },
+  'ir10': { x: 400, y: 455, type: 'road' },
+  'ir11': { x: 375, y: 480, type: 'road' },
+  'ir12': { x: 345, y: 500, type: 'road' },
+  'ir13': { x: 310, y: 515, type: 'road' },
+  'ir14': { x: 275, y: 520, type: 'road' },
+  'ir15': { x: 240, y: 515, type: 'road' },
+  'ir16': { x: 210, y: 500, type: 'road' },
+  'ir17': { x: 185, y: 480, type: 'road' },
+  'ir18': { x: 165, y: 450, type: 'road' },
+  'ir19': { x: 150, y: 415, type: 'road' },
+  'ir20': { x: 145, y: 380, type: 'road' },
+  'ir21': { x: 150, y: 345, type: 'road' },
+  'ir22': { x: 165, y: 315, type: 'road' },
+  'ir23': { x: 185, y: 295, type: 'road' },
 
-  // Green dirt roads (northern area)
-  'dirt1': { x: 140, y: 100, type: 'dirt' },
-  'dirt2': { x: 180, y: 90, type: 'dirt' },
-  'dirt3': { x: 220, y: 85, type: 'dirt' },
-  'dirt4': { x: 260, y: 80, type: 'dirt' },
-  'dirt5': { x: 300, y: 75, type: 'dirt' },
-  'dirt6': { x: 340, y: 70, type: 'dirt' },
-  'dirt7': { x: 160, y: 120, type: 'dirt' },
-  'dirt8': { x: 200, y: 115, type: 'dirt' },
-  'dirt9': { x: 240, y: 105, type: 'dirt' },
-  'dirt10': { x: 280, y: 100, type: 'dirt' },
-  'dirt11': { x: 120, y: 140, type: 'dirt' },
-  'dirt12': { x: 140, y: 125, type: 'dirt' },
+  // Central grid roads (red)
+  'c1': { x: 230, y: 320, type: 'road' },
+  'c2': { x: 270, y: 315, type: 'road' },
+  'c3': { x: 310, y: 320, type: 'road' },
+  'c4': { x: 350, y: 330, type: 'road' },
+  'c5': { x: 230, y: 360, type: 'road' },
+  'c6': { x: 270, y: 355, type: 'road' },
+  'c7': { x: 310, y: 360, type: 'road' },
+  'c8': { x: 350, y: 370, type: 'road' },
+  'c9': { x: 230, y: 400, type: 'road' },
+  'c10': { x: 270, y: 395, type: 'road' },
+  'c11': { x: 310, y: 400, type: 'road' },
+  'c12': { x: 350, y: 410, type: 'road' },
+  'c13': { x: 230, y: 440, type: 'road' },
+  'c14': { x: 270, y: 435, type: 'road' },
+  'c15': { x: 310, y: 440, type: 'road' },
+  'c16': { x: 350, y: 450, type: 'road' },
 
-  // Blue bridge roads (#5698cf)
-  'bridge1': { x: 350, y: 220, type: 'bridge' },
-  'bridge2': { x: 390, y: 215, type: 'bridge' },
-  'bridge3': { x: 430, y: 220, type: 'bridge' },
-  'bridge4': { x: 470, y: 230, type: 'bridge' },
-  'bridge5': { x: 480, y: 270, type: 'bridge' },
-  'bridge6': { x: 470, y: 310, type: 'bridge' },
-  'bridge7': { x: 430, y: 320, type: 'bridge' },
-  'bridge8': { x: 390, y: 315, type: 'bridge' },
-  'bridge9': { x: 350, y: 310, type: 'bridge' },
-  'bridge10': { x: 320, y: 290, type: 'bridge' },
-  'bridge11': { x: 320, y: 250, type: 'bridge' },
+  // Blue bridge roads (#5698cf) - following your blue lines
+  'b1': { x: 290, y: 240, type: 'bridge' },
+  'b2': { x: 320, y: 235, type: 'bridge' },
+  'b3': { x: 350, y: 240, type: 'bridge' },
+  'b4': { x: 380, y: 250, type: 'bridge' },
+  'b5': { x: 400, y: 280, type: 'bridge' },
+  'b6': { x: 410, y: 315, type: 'bridge' },
+  'b7': { x: 405, y: 350, type: 'bridge' },
+  'b8': { x: 390, y: 380, type: 'bridge' },
+  'b9': { x: 365, y: 400, type: 'bridge' },
+  'b10': { x: 335, y: 415, type: 'bridge' },
+  'b11': { x: 305, y: 420, type: 'bridge' },
+  'b12': { x: 275, y: 415, type: 'bridge' },
+  'b13': { x: 250, y: 400, type: 'bridge' },
+  'b14': { x: 230, y: 380, type: 'bridge' },
+  'b15': { x: 220, y: 350, type: 'bridge' },
+  'b16': { x: 225, y: 320, type: 'bridge' },
+  'b17': { x: 240, y: 295, type: 'bridge' },
+  'b18': { x: 265, y: 275, type: 'bridge' },
 
-  // Bridge connectors (lime #bfff00 and purple #c800ea)
-  'conn1': { x: 350, y: 240, type: 'connector' },
-  'conn2': { x: 390, y: 235, type: 'connector' },
-  'conn3': { x: 430, y: 240, type: 'connector' },
-  'conn4': { x: 470, y: 250, type: 'connector' },
-  'conn5': { x: 470, y: 290, type: 'connector' },
-  'conn6': { x: 430, y: 300, type: 'connector' },
-  'conn7': { x: 390, y: 295, type: 'connector' },
-  'conn8': { x: 350, y: 290, type: 'connector' },
+  // Lime/Purple connectors (#bfff00, #c800ea) - bridge access
+  'con1': { x: 290, y: 260, type: 'connector' },
+  'con2': { x: 320, y: 255, type: 'connector' },
+  'con3': { x: 350, y: 260, type: 'connector' },
+  'con4': { x: 380, y: 270, type: 'connector' },
+  'con5': { x: 385, y: 300, type: 'connector' },
+  'con6': { x: 380, y: 330, type: 'connector' },
+  'con7': { x: 365, y: 360, type: 'connector' },
+  'con8': { x: 340, y: 385, type: 'connector' },
+  'con9': { x: 310, y: 400, type: 'connector' },
+  'con10': { x: 280, y: 395, type: 'connector' },
+  'con11': { x: 255, y: 380, type: 'connector' },
+  'con12': { x: 240, y: 355, type: 'connector' },
+  'con13': { x: 235, y: 325, type: 'connector' },
+  'con14': { x: 250, y: 300, type: 'connector' },
+  'con15': { x: 275, y: 285, type: 'connector' },
 
-  // Extensions and connections to your drawing
-  'ext1': { x: 80, y: 200, type: 'road' },
-  'ext2': { x: 60, y: 250, type: 'road' },
-  'ext3': { x: 70, y: 300, type: 'road' },
-  'ext4': { x: 85, y: 350, type: 'road' },
-  'ext5': { x: 720, y: 200, type: 'road' },
-  'ext6': { x: 730, y: 250, type: 'road' },
-  'ext7': { x: 725, y: 300, type: 'road' },
-  'ext8': { x: 710, y: 350, type: 'road' },
-  'ext9': { x: 200, y: 500, type: 'road' },
-  'ext10': { x: 300, y: 510, type: 'road' },
-  'ext11': { x: 400, y: 515, type: 'road' },
-  'ext12': { x: 500, y: 510, type: 'road' },
-  'ext13': { x: 600, y: 500, type: 'road' }
+  // Eastern extensions (red)
+  'e1': { x: 520, y: 300, type: 'road' },
+  'e2': { x: 550, y: 320, type: 'road' },
+  'e3': { x: 575, y: 350, type: 'road' },
+  'e4': { x: 590, y: 385, type: 'road' },
+  'e5': { x: 595, y: 420, type: 'road' },
+  'e6': { x: 590, y: 455, type: 'road' },
+  'e7': { x: 575, y: 485, type: 'road' },
+
+  // Western extensions (red)
+  'w1': { x: 30, y: 320, type: 'road' },
+  'w2': { x: 20, y: 360, type: 'road' },
+  'w3': { x: 25, y: 400, type: 'road' },
+  'w4': { x: 35, y: 440, type: 'road' },
+
+  // Southern extensions (red)  
+  's1': { x: 200, y: 650, type: 'road' },
+  's2': { x: 250, y: 655, type: 'road' },
+  's3': { x: 300, y: 660, type: 'road' },
+  's4': { x: 350, y: 655, type: 'road' },
+  's5': { x: 400, y: 650, type: 'road' }
 };
 
-// Road connections based on your drawing
+// Road network connections based on your actual drawing
 const ROAD_NETWORK = {
-  // Outer loop connections
-  'outer1': ['outer2', 'outer39', 'dirt11', 'ext1'],
-  'outer2': ['outer1', 'outer3', 'dirt7'],
-  'outer3': ['outer2', 'outer4', 'dirt8'],
-  'outer4': ['outer3', 'outer5', 'dirt9'],
-  'outer5': ['outer4', 'outer6', 'dirt10'],
-  'outer6': ['outer5', 'outer7', 'dirt6'],
-  'outer7': ['outer6', 'outer8', 'inner5'],
-  'outer8': ['outer7', 'outer9', 'inner6'],
-  'outer9': ['outer8', 'outer10', 'inner7'],
-  'outer10': ['outer9', 'outer11', 'inner8'],
-  'outer11': ['outer10', 'outer12', 'inner9'],
-  'outer12': ['outer11', 'outer13', 'ext5'],
-  'outer13': ['outer12', 'outer14', 'ext6'],
-  'outer14': ['outer13', 'outer15'],
-  'outer15': ['outer14', 'outer16', 'ext7'],
-  'outer16': ['outer15', 'outer17'],
-  'outer17': ['outer16', 'outer18', 'inner11'],
-  'outer18': ['outer17', 'outer19', 'inner12'],
-  'outer19': ['outer18', 'outer20', 'inner13'],
-  'outer20': ['outer19', 'outer21', 'inner14'],
-  'outer21': ['outer20', 'outer22', 'inner15'],
-  'outer22': ['outer21', 'outer23', 'inner16'],
-  'outer23': ['outer22', 'outer24', 'inner17'],
-  'outer24': ['outer23', 'outer25', 'inner18'],
-  'outer25': ['outer24', 'outer26', 'inner19'],
-  'outer26': ['outer25', 'outer27', 'ext11'],
-  'outer27': ['outer26', 'outer28'],
-  'outer28': ['outer27', 'outer29', 'inner20'],
-  'outer29': ['outer28', 'outer30', 'inner21'],
-  'outer30': ['outer29', 'outer31', 'ext10'],
-  'outer31': ['outer30', 'outer32', 'inner22'],
-  'outer32': ['outer31', 'outer33', 'inner23'],
-  'outer33': ['outer32', 'outer34', 'inner24'],
-  'outer34': ['outer33', 'outer35', 'inner25'],
-  'outer35': ['outer34', 'outer36', 'ext4'],
-  'outer36': ['outer35', 'outer37', 'ext3'],
-  'outer37': ['outer36', 'outer38', 'ext2'],
-  'outer38': ['outer37', 'outer39', 'inner26'],
-  'outer39': ['outer38', 'outer1', 'inner27'],
+  // Green dirt roads connections
+  'g1': ['g2', 'g18'],
+  'g2': ['g1', 'g3'],
+  'g3': ['g2', 'g4'],
+  'g4': ['g3', 'g5'],
+  'g5': ['g4', 'g6'],
+  'g6': ['g5', 'g7'],
+  'g7': ['g6', 'g8'],
+  'g8': ['g7', 'g9'],
+  'g9': ['g8', 'g10'],
+  'g10': ['g9', 'g11'],
+  'g11': ['g10', 'g12'],
+  'g12': ['g11', 'g13'],
+  'g13': ['g12', 'g14'],
+  'g14': ['g13', 'g15'],
+  'g15': ['g14', 'g16'],
+  'g16': ['g15', 'g17'],
+  'g17': ['g16', 'g18'],
+  'g18': ['g17', 'g1'],
 
-  // Inner loop connections
-  'inner1': ['inner2', 'inner27', 'grid1'],
-  'inner2': ['inner1', 'inner3', 'grid2'],
-  'inner3': ['inner2', 'inner4', 'grid3'],
-  'inner4': ['inner3', 'inner5', 'grid4'],
-  'inner5': ['inner4', 'inner6', 'outer7', 'grid5'],
-  'inner6': ['inner5', 'inner7', 'outer8', 'grid6'],
-  'inner7': ['inner6', 'inner8', 'outer9'],
-  'inner8': ['inner7', 'inner9', 'outer10'],
-  'inner9': ['inner8', 'inner10', 'outer11'],
-  'inner10': ['inner9', 'inner11'],
-  'inner11': ['inner10', 'inner12', 'outer17'],
-  'inner12': ['inner11', 'inner13', 'outer18'],
-  'inner13': ['inner12', 'inner14', 'outer19'],
-  'inner14': ['inner13', 'inner15', 'outer20'],
-  'inner15': ['inner14', 'inner16', 'outer21'],
-  'inner16': ['inner15', 'inner17', 'outer22'],
-  'inner17': ['inner16', 'inner18', 'outer23'],
-  'inner18': ['inner17', 'inner19', 'outer24'],
-  'inner19': ['inner18', 'inner20', 'outer25'],
-  'inner20': ['inner19', 'inner21', 'outer28'],
-  'inner21': ['inner20', 'inner22', 'outer29'],
-  'inner22': ['inner21', 'inner23', 'outer31'],
-  'inner23': ['inner22', 'inner24', 'outer32'],
-  'inner24': ['inner23', 'inner25', 'outer33'],
-  'inner25': ['inner24', 'inner26', 'outer34'],
-  'inner26': ['inner25', 'inner27', 'outer38'],
-  'inner27': ['inner26', 'inner1', 'outer39'],
+  // Outer red road loop
+  'r1': ['r2', 'r34', 'g13'],
+  'r2': ['r1', 'r3'],
+  'r3': ['r2', 'r4', 'g11'],
+  'r4': ['r3', 'r5'],
+  'r5': ['r4', 'r6'],
+  'r6': ['r5', 'r7', 'ir2'],
+  'r7': ['r6', 'r8', 'ir3'],
+  'r8': ['r7', 'r9', 'ir4'],
+  'r9': ['r8', 'r10', 'ir5'],
+  'r10': ['r9', 'r11', 'ir6'],
+  'r11': ['r10', 'r12', 'ir7'],
+  'r12': ['r11', 'r13', 'ir8'],
+  'r13': ['r12', 'r14', 'ir9'],
+  'r14': ['r13', 'r15', 'ir10'],
+  'r15': ['r14', 'r16', 'ir11'],
+  'r16': ['r15', 'r17', 'ir12'],
+  'r17': ['r16', 'r18', 'ir13'],
+  'r18': ['r17', 'r19', 'ir14'],
+  'r19': ['r18', 'r20', 'ir15'],
+  'r20': ['r19', 'r21', 's3'],
+  'r21': ['r20', 'r22', 's2'],
+  'r22': ['r21', 'r23', 's1'],
+  'r23': ['r22', 'r24', 'ir16'],
+  'r24': ['r23', 'r25', 'ir17'],
+  'r25': ['r24', 'r26', 'ir18'],
+  'r26': ['r25', 'r27', 'ir19'],
+  'r27': ['r26', 'r28', 'w4'],
+  'r28': ['r27', 'r29', 'w3'],
+  'r29': ['r28', 'r30', 'w2'],
+  'r30': ['r29', 'r31', 'w1'],
+  'r31': ['r30', 'r32'],
+  'r32': ['r31', 'r33', 'ir22'],
+  'r33': ['r32', 'r34', 'ir23'],
+  'r34': ['r33', 'r1'],
 
-  // Grid connections (horizontal)
-  'grid1': ['inner1', 'grid2', 'grid7'],
-  'grid2': ['inner2', 'grid1', 'grid3', 'grid8'],
-  'grid3': ['inner3', 'grid2', 'grid4', 'grid9'],
-  'grid4': ['inner4', 'grid3', 'grid5', 'grid10'],
-  'grid5': ['inner5', 'grid4', 'grid6', 'grid11'],
-  'grid6': ['inner6', 'grid5', 'grid12'],
-  'grid7': ['grid1', 'grid8', 'grid13'],
-  'grid8': ['grid2', 'grid7', 'grid9', 'grid14'],
-  'grid9': ['grid3', 'grid8', 'grid10', 'grid15'],
-  'grid10': ['grid4', 'grid9', 'grid11', 'grid16'],
-  'grid11': ['grid5', 'grid10', 'grid12', 'grid17'],
-  'grid12': ['grid6', 'grid11', 'grid18'],
-  'grid13': ['grid7', 'grid14', 'grid19'],
-  'grid14': ['grid8', 'grid13', 'grid15', 'grid20'],
-  'grid15': ['grid9', 'grid14', 'grid16', 'grid21'],
-  'grid16': ['grid10', 'grid15', 'grid17', 'grid22'],
-  'grid17': ['grid11', 'grid16', 'grid18', 'grid23'],
-  'grid18': ['grid12', 'grid17', 'grid24'],
-  'grid19': ['grid13', 'grid20'],
-  'grid20': ['grid14', 'grid19', 'grid21'],
-  'grid21': ['grid15', 'grid20', 'grid22'],
-  'grid22': ['grid16', 'grid21', 'grid23'],
-  'grid23': ['grid17', 'grid22', 'grid24'],
-  'grid24': ['grid18', 'grid23'],
+  // Inner red roads
+  'ir1': ['ir2', 'ir23'],
+  'ir2': ['ir1', 'ir3', 'r6'],
+  'ir3': ['ir2', 'ir4', 'r7'],
+  'ir4': ['ir3', 'ir5', 'r8'],
+  'ir5': ['ir4', 'ir6', 'r9'],
+  'ir6': ['ir5', 'ir7', 'r10'],
+  'ir7': ['ir6', 'ir8', 'r11'],
+  'ir8': ['ir7', 'ir9', 'r12'],
+  'ir9': ['ir8', 'ir10', 'r13'],
+  'ir10': ['ir9', 'ir11', 'r14'],
+  'ir11': ['ir10', 'ir12', 'r15'],
+  'ir12': ['ir11', 'ir13', 'r16'],
+  'ir13': ['ir12', 'ir14', 'r17'],
+  'ir14': ['ir13', 'ir15', 'r18'],
+  'ir15': ['ir14', 'ir16', 'r19'],
+  'ir16': ['ir15', 'ir17', 'r23'],
+  'ir17': ['ir16', 'ir18', 'r24'],
+  'ir18': ['ir17', 'ir19', 'r25'],
+  'ir19': ['ir18', 'ir20', 'r26'],
+  'ir20': ['ir19', 'ir21'],
+  'ir21': ['ir20', 'ir22'],
+  'ir22': ['ir21', 'ir23', 'r32'],
+  'ir23': ['ir22', 'ir1', 'r33'],
 
-  // Dirt road connections
-  'dirt1': ['dirt2', 'dirt7'],
-  'dirt2': ['dirt1', 'dirt3', 'dirt8'],
-  'dirt3': ['dirt2', 'dirt4', 'dirt9'],
-  'dirt4': ['dirt3', 'dirt5', 'dirt10'],
-  'dirt5': ['dirt4', 'dirt6'],
-  'dirt6': ['dirt5', 'outer6'],
-  'dirt7': ['dirt1', 'dirt8', 'dirt12', 'outer2'],
-  'dirt8': ['dirt2', 'dirt7', 'dirt9', 'outer3'],
-  'dirt9': ['dirt3', 'dirt8', 'dirt10', 'outer4'],
-  'dirt10': ['dirt4', 'dirt9', 'outer5'],
-  'dirt11': ['dirt12', 'outer1'],
-  'dirt12': ['dirt11', 'dirt7'],
+  // Central grid roads
+  'c1': ['c2', 'c5', 'ir1'],
+  'c2': ['c1', 'c3', 'c6'],
+  'c3': ['c2', 'c4', 'c7'],
+  'c4': ['c3', 'c8'],
+  'c5': ['c1', 'c6', 'c9'],
+  'c6': ['c2', 'c5', 'c7', 'c10'],
+  'c7': ['c3', 'c6', 'c8', 'c11'],
+  'c8': ['c4', 'c7', 'c12'],
+  'c9': ['c5', 'c10', 'c13'],
+  'c10': ['c6', 'c9', 'c11', 'c14'],
+  'c11': ['c7', 'c10', 'c12', 'c15'],
+  'c12': ['c8', 'c11', 'c16'],
+  'c13': ['c9', 'c14'],
+  'c14': ['c10', 'c13', 'c15'],
+  'c15': ['c11', 'c14', 'c16'],
+  'c16': ['c12', 'c15'],
 
-  // Bridge connections
-  'bridge1': ['bridge2', 'bridge11', 'conn1'],
-  'bridge2': ['bridge1', 'bridge3', 'conn2'],
-  'bridge3': ['bridge2', 'bridge4', 'conn3'],
-  'bridge4': ['bridge3', 'bridge5', 'conn4'],
-  'bridge5': ['bridge4', 'bridge6', 'conn5'],
-  'bridge6': ['bridge5', 'bridge7'],
-  'bridge7': ['bridge6', 'bridge8', 'conn6'],
-  'bridge8': ['bridge7', 'bridge9', 'conn7'],
-  'bridge9': ['bridge8', 'bridge10', 'conn8'],
-  'bridge10': ['bridge9', 'bridge11'],
-  'bridge11': ['bridge10', 'bridge1'],
+  // Bridge roads
+  'b1': ['b2', 'b18', 'con1'],
+  'b2': ['b1', 'b3', 'con2'],
+  'b3': ['b2', 'b4', 'con3'],
+  'b4': ['b3', 'b5', 'con4'],
+  'b5': ['b4', 'b6', 'con5'],
+  'b6': ['b5', 'b7', 'con6'],
+  'b7': ['b6', 'b8', 'con7'],
+  'b8': ['b7', 'b9', 'con8'],
+  'b9': ['b8', 'b10', 'con9'],
+  'b10': ['b9', 'b11'],
+  'b11': ['b10', 'b12', 'con10'],
+  'b12': ['b11', 'b13', 'con11'],
+  'b13': ['b12', 'b14', 'con12'],
+  'b14': ['b13', 'b15'],
+  'b15': ['b14', 'b16', 'con13'],
+  'b16': ['b15', 'b17'],
+  'b17': ['b16', 'b18', 'con14'],
+  'b18': ['b17', 'b1', 'con15'],
 
   // Bridge connectors
-  'conn1': ['bridge1', 'grid3'],
-  'conn2': ['bridge2', 'grid4'],
-  'conn3': ['bridge3', 'grid5'],
-  'conn4': ['bridge4', 'grid6'],
-  'conn5': ['bridge5', 'grid12'],
-  'conn6': ['bridge7', 'grid17'],
-  'conn7': ['bridge8', 'grid16'],
-  'conn8': ['bridge9', 'grid15'],
+  'con1': ['b1', 'c2'],
+  'con2': ['b2', 'c3'],
+  'con3': ['b3', 'c4'],
+  'con4': ['b4', 'ir5'],
+  'con5': ['b5', 'c8'],
+  'con6': ['b6', 'c8'],
+  'con7': ['b7', 'c12'],
+  'con8': ['b8', 'c12'],
+  'con9': ['b9', 'c11'],
+  'con10': ['b11', 'c10'],
+  'con11': ['b12', 'c9'],
+  'con12': ['b13', 'c5'],
+  'con13': ['b15', 'c1'],
+  'con14': ['b17', 'c1'],
+  'con15': ['b18', 'c2'],
 
-  // Extensions
-  'ext1': ['outer1', 'ext2'],
-  'ext2': ['ext1', 'ext3', 'outer37'],
-  'ext3': ['ext2', 'ext4', 'outer36'],
-  'ext4': ['ext3', 'outer35'],
-  'ext5': ['outer12', 'ext6'],
-  'ext6': ['ext5', 'ext7', 'outer13'],
-  'ext7': ['ext6', 'ext8', 'outer15'],
-  'ext8': ['ext7'],
-  'ext9': ['ext10'],
-  'ext10': ['ext9', 'ext11', 'outer30'],
-  'ext11': ['ext10', 'ext12', 'outer26'],
-  'ext12': ['ext11', 'ext13'],
-  'ext13': ['ext12']
+  // Eastern extensions
+  'e1': ['e2', 'r9'],
+  'e2': ['e1', 'e3'],
+  'e3': ['e2', 'e4'],
+  'e4': ['e3', 'e5'],
+  'e5': ['e4', 'e6'],
+  'e6': ['e5', 'e7'],
+  'e7': ['e6', 'r14'],
+
+  // Western extensions  
+  'w1': ['w2', 'r30'],
+  'w2': ['w1', 'w3', 'r29'],
+  'w3': ['w2', 'w4', 'r28'],
+  'w4': ['w3', 'r27'],
+
+  // Southern extensions
+  's1': ['s2', 'r22'],
+  's2': ['s1', 's3', 'r21'],
+  's3': ['s2', 's4', 'r20'],
+  's4': ['s3', 's5'],
+  's5': ['s4']
 };
 
 // Find the closest road point to any x,y coordinate
@@ -413,18 +435,18 @@ function BloxburgGPS() {
     if (!startPoint) {
       setStartPoint(closestRoadPoint);
       setStartCoords({ x, y });
-      console.log('Start point set:', { x: x.toFixed(0), y: y.toFixed(0), road: closestRoadPoint });
+      console.log('Start:', { x: x.toFixed(0), y: y.toFixed(0), road: closestRoadPoint });
     } else if (!endPoint) {
       setEndPoint(closestRoadPoint);
       setEndCoords({ x, y });
-      console.log('End point set:', { x: x.toFixed(0), y: y.toFixed(0), road: closestRoadPoint });
+      console.log('End:', { x: x.toFixed(0), y: y.toFixed(0), road: closestRoadPoint });
     } else {
       setStartPoint(closestRoadPoint);
       setStartCoords({ x, y });
       setEndPoint(null);
       setEndCoords(null);
       setRoute([]);
-      console.log('Reset - new start:', { x: x.toFixed(0), y: y.toFixed(0), road: closestRoadPoint });
+      console.log('Reset:', { x: x.toFixed(0), y: y.toFixed(0), road: closestRoadPoint });
     }
   };
 
@@ -440,7 +462,6 @@ function BloxburgGPS() {
           console.log('Route found:', path.length, 'points');
         } else {
           alert('No route found between these points!');
-          console.log('No route found');
         }
         setIsCalculating(false);
       }, 100);
@@ -474,11 +495,11 @@ function BloxburgGPS() {
         if (currentType === 'bridge') {
           instruction = 'Take the bridge';
         } else if (currentType === 'connector') {
-          instruction = 'Use bridge connector';
+          instruction = 'Use bridge access';
         } else if (currentType === 'dirt') {
           instruction = 'Continue on dirt road';
         } else {
-          instruction = 'Continue on main road';
+          instruction = 'Follow main road';
         }
         
         if (i === route.length - 1) {
@@ -516,7 +537,7 @@ function BloxburgGPS() {
       <div className="bg-slate-900 text-white p-4 shadow-lg">
         <h1 className="text-3xl font-bold text-center flex items-center justify-center gap-3">
           <span className="text-blue-400">🗺️</span>
-          Bloxburg GPS - Following Your Road Map
+          Bloxburg GPS - Your Actual Road Map
           <span className="text-green-400">📍</span>
         </h1>
       </div>
@@ -556,7 +577,7 @@ function BloxburgGPS() {
               onClick={() => setShowRoads(!showRoads)}
               className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
             >
-              👁️ {showRoads ? 'Hide' : 'Show'} Road Network
+              👁️ {showRoads ? 'Hide' : 'Show'} Your Road Drawing
             </button>
             <button
               onClick={findRoute}
@@ -574,7 +595,7 @@ function BloxburgGPS() {
                 <div><span className="font-medium">Distance:</span> {routeInfo.distance} units</div>
                 <div><span className="font-medium">Est. Time:</span> {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s</div>
                 <div><span className="font-medium">Road Points:</span> {route.length}</div>
-                <div><span className="font-medium">Status:</span> Following Roads</div>
+                <div><span className="font-medium">Status:</span> Following Your Roads</div>
               </div>
             </div>
           )}
@@ -585,7 +606,7 @@ function BloxburgGPS() {
           <div className="xl:col-span-2">
             <div className="bg-white rounded-lg shadow-lg p-4">
               <h2 className="text-xl font-bold mb-4 text-center">
-                🗺️ Bloxburg Map {showRoads ? '- Roads Visible' : '- Clean View'}
+                🗺️ Bloxburg Map {showRoads ? '- Your Roads Visible' : '- Clean View'}
               </h2>
               <div className="relative">
                 <svg
@@ -601,7 +622,19 @@ function BloxburgGPS() {
                   }}
                   onClick={handleMapClick}
                 >
-                  {/* Road network visualization (if enabled) */}
+                  {/* Your road drawing overlay */}
+                  {showRoads && (
+                    <image
+                      href="https://i.imgur.com/ySLMbQS.png"
+                      x="0"
+                      y="0"
+                      width="800"
+                      height="600"
+                      opacity="0.6"
+                    />
+                  )}
+
+                  {/* Road network connections (if roads visible) */}
                   {showRoads && Object.entries(ROAD_NETWORK).map(([from, connections]) => 
                     connections.map(to => {
                       if (!ROAD_POINTS[from] || !ROAD_POINTS[to]) return null;
@@ -617,23 +650,11 @@ function BloxburgGPS() {
                           y2={end.y}
                           stroke={getRoadColor(start.type)}
                           strokeWidth="2"
-                          opacity="0.7"
+                          opacity="0.8"
                         />
                       );
                     })
                   )}
-
-                  {/* Road points (if roads are visible) */}
-                  {showRoads && Object.entries(ROAD_POINTS).map(([pointId, coords]) => (
-                    <circle
-                      key={pointId}
-                      cx={coords.x}
-                      cy={coords.y}
-                      r="2"
-                      fill={getRoadColor(coords.type)}
-                      opacity="0.8"
-                    />
-                  ))}
 
                   {/* Route visualization */}
                   {route.length > 1 && route.map((pointId, index) => {
@@ -649,7 +670,7 @@ function BloxburgGPS() {
                         x2={end.x}
                         y2={end.y}
                         stroke="#FFD700"
-                        strokeWidth="5"
+                        strokeWidth="6"
                         opacity="0.9"
                         strokeLinecap="round"
                       />
@@ -662,14 +683,14 @@ function BloxburgGPS() {
                       <circle
                         cx={startCoords.x}
                         cy={startCoords.y}
-                        r="10"
+                        r="12"
                         fill="#4CAF50"
                         stroke="white"
                         strokeWidth="3"
                       />
                       <text
                         x={startCoords.x}
-                        y={startCoords.y - 15}
+                        y={startCoords.y - 18}
                         textAnchor="middle"
                         className="text-sm font-bold fill-green-700"
                       >
@@ -684,14 +705,14 @@ function BloxburgGPS() {
                       <circle
                         cx={endCoords.x}
                         cy={endCoords.y}
-                        r="10"
+                        r="12"
                         fill="#F44336"
                         stroke="white"
                         strokeWidth="3"
                       />
                       <text
                         x={endCoords.x}
-                        y={endCoords.y - 15}
+                        y={endCoords.y - 18}
                         textAnchor="middle"
                         className="text-sm font-bold fill-red-700"
                       >
@@ -735,13 +756,13 @@ function BloxburgGPS() {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-1" style={{backgroundColor: '#FFD700'}}></div>
-                    <span>Your Route</span>
+                    <span>GPS Route</span>
                   </div>
                   {showRoads && (
                     <>
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-1" style={{backgroundColor: '#FF0000'}}></div>
-                        <span>Roads</span>
+                        <span>Main Roads</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-1" style={{backgroundColor: '#00FF00'}}></div>
@@ -791,7 +812,7 @@ function BloxburgGPS() {
                       <div>🚶 Distance: {routeInfo.distance} units</div>
                       <div>⏱️ Time: {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s</div>
                       <div>🛣️ Road Points: {route.length}</div>
-                      <div>📍 Following: Your Road Map</div>
+                      <div>📍 Using: Your Road Map</div>
                     </div>
                   </div>
                 </div>
@@ -802,10 +823,10 @@ function BloxburgGPS() {
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg text-left">
                     <h4 className="font-semibold text-blue-800 mb-2">GPS Features:</h4>
                     <div className="space-y-1 text-xs">
-                      <div>✅ Follows your exact road drawing</div>
-                      <div>✅ Click anywhere navigation</div>
-                      <div>✅ Toggle to see road network</div>
-                      <div>✅ Optimal pathfinding</div>
+                      <div>✅ Uses YOUR exact road drawing</div>
+                      <div>✅ Follows curves and paths</div>
+                      <div>✅ No more off-road routes</div>
+                      <div>✅ Toggle to see roads overlay</div>
                     </div>
                   </div>
                 </div>
