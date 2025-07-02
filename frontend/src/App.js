@@ -3,15 +3,15 @@ import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Create a dense grid of road points covering the entire map
-function createRoadGrid() {
+// Much simpler and faster - sparse grid every 50 pixels
+function createSimpleRoadGrid() {
   const roads = {};
   let pointId = 0;
   
-  // Dense grid - every 20 pixels
-  for (let x = 20; x < 780; x += 20) {
-    for (let y = 20; y < 580; y += 20) {
-      const id = `road_${pointId++}`;
+  // Sparse grid - every 50 pixels (only ~200 points total)
+  for (let x = 50; x < 800; x += 50) {
+    for (let y = 50; y < 600; y += 50) {
+      const id = `r${pointId++}`;
       roads[id] = { x, y };
     }
   }
@@ -19,22 +19,21 @@ function createRoadGrid() {
   return roads;
 }
 
-// Connect nearby road points
-function createRoadNetwork(roadPoints) {
+// Simple connections - only 4 directions (up, down, left, right)
+function createSimpleNetwork(roadPoints) {
   const network = {};
-  const maxDistance = 28; // Connect to nearby points
   
   for (const [pointId, point] of Object.entries(roadPoints)) {
     network[pointId] = [];
     
+    // Find direct neighbors (50px away in cardinal directions)
     for (const [otherId, otherPoint] of Object.entries(roadPoints)) {
       if (pointId !== otherId) {
-        const distance = Math.sqrt(
-          Math.pow(point.x - otherPoint.x, 2) + 
-          Math.pow(point.y - otherPoint.y, 2)
-        );
+        const dx = Math.abs(point.x - otherPoint.x);
+        const dy = Math.abs(point.y - otherPoint.y);
         
-        if (distance <= maxDistance) {
+        // Only connect to immediate neighbors (50px away)
+        if ((dx === 50 && dy === 0) || (dx === 0 && dy === 50)) {
           network[pointId].push(otherId);
         }
       }
@@ -44,8 +43,8 @@ function createRoadNetwork(roadPoints) {
   return network;
 }
 
-const ROAD_POINTS = createRoadGrid();
-const ROAD_NETWORK = createRoadNetwork(ROAD_POINTS);
+const ROAD_POINTS = createSimpleRoadGrid();
+const ROAD_NETWORK = createSimpleNetwork(ROAD_POINTS);
 
 function findClosestRoadPoint(x, y) {
   let closestPoint = null;
@@ -65,59 +64,32 @@ function findClosestRoadPoint(x, y) {
   return closestPoint;
 }
 
+// Simple BFS pathfinding - much faster than A*
 function findPath(startPoint, endPoint) {
   if (startPoint === endPoint) return [startPoint];
   if (!ROAD_NETWORK[startPoint] || !ROAD_NETWORK[endPoint]) return null;
   
-  const openSet = [startPoint];
-  const cameFrom = {};
-  const gScore = { [startPoint]: 0 };
-  const fScore = { [startPoint]: heuristic(startPoint, endPoint) };
+  const queue = [[startPoint]];
+  const visited = new Set([startPoint]);
   
-  while (openSet.length > 0) {
-    let current = openSet.reduce((a, b) => 
-      (fScore[a] || Infinity) < (fScore[b] || Infinity) ? a : b
-    );
+  while (queue.length > 0) {
+    const path = queue.shift();
+    const current = path[path.length - 1];
     
     if (current === endPoint) {
-      const path = [current];
-      while (cameFrom[current]) {
-        current = cameFrom[current];
-        path.unshift(current);
-      }
       return path;
     }
     
-    openSet.splice(openSet.indexOf(current), 1);
     const neighbors = ROAD_NETWORK[current] || [];
-    
     for (const neighbor of neighbors) {
-      const tentativeGScore = gScore[current] + distance(current, neighbor);
-      
-      if (tentativeGScore < (gScore[neighbor] || Infinity)) {
-        cameFrom[neighbor] = current;
-        gScore[neighbor] = tentativeGScore;
-        fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, endPoint);
-        
-        if (!openSet.includes(neighbor)) {
-          openSet.push(neighbor);
-        }
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push([...path, neighbor]);
       }
     }
   }
   
   return null;
-}
-
-function distance(point1, point2) {
-  if (!ROAD_POINTS[point1] || !ROAD_POINTS[point2]) return Infinity;
-  const dx = ROAD_POINTS[point1].x - ROAD_POINTS[point2].x;
-  const dy = ROAD_POINTS[point1].y - ROAD_POINTS[point2].y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-function heuristic(point1, point2) {
-  return distance(point1, point2);
 }
 
 function BloxburgGPS() {
@@ -140,36 +112,39 @@ function BloxburgGPS() {
     if (!startPoint) {
       setStartPoint(closestRoadPoint);
       setStartCoords({ x, y });
-      console.log('Start:', x, y);
+      console.log('Start point:', closestRoadPoint, 'at', x.toFixed(0), y.toFixed(0));
     } else if (!endPoint) {
       setEndPoint(closestRoadPoint);
       setEndCoords({ x, y });
-      console.log('End:', x, y);
+      console.log('End point:', closestRoadPoint, 'at', x.toFixed(0), y.toFixed(0));
     } else {
+      // Reset
       setStartPoint(closestRoadPoint);
       setStartCoords({ x, y });
       setEndPoint(null);
       setEndCoords(null);
       setRoute([]);
-      console.log('Reset:', x, y);
+      console.log('Reset - new start:', closestRoadPoint);
     }
   };
 
-  const calculateRoute = async () => {
+  const calculateRoute = () => {
     if (startPoint && endPoint) {
       setIsCalculating(true);
-      console.log('Calculating route from', startPoint, 'to', endPoint);
+      console.log('Finding path from', startPoint, 'to', endPoint);
       
-      setTimeout(() => {
-        const path = findPath(startPoint, endPoint);
-        console.log('Path found:', path ? path.length : 'null');
-        if (path) {
-          setRoute(path);
-        } else {
-          alert('No route found!');
-        }
-        setIsCalculating(false);
-      }, 100);
+      // Very fast calculation
+      const path = findPath(startPoint, endPoint);
+      console.log('Path result:', path ? `${path.length} points` : 'No path');
+      
+      if (path) {
+        setRoute(path);
+        console.log('Route set with', path.length, 'points');
+      } else {
+        alert('No route found!');
+      }
+      
+      setIsCalculating(false);
     }
   };
 
@@ -179,18 +154,15 @@ function BloxburgGPS() {
     setStartCoords(null);
     setEndCoords(null);
     setRoute([]);
+    console.log('Cleared all');
   };
 
   useEffect(() => {
     if (startPoint && endPoint) {
+      console.log('Auto-calculating route...');
       calculateRoute();
     }
   }, [startPoint, endPoint]);
-
-  const routeDistance = route.length > 1 ? route.reduce((total, pointId, index) => {
-    if (index === route.length - 1) return total;
-    return total + distance(pointId, route[index + 1]);
-  }, 0) : 0;
 
   return (
     <div className="h-screen w-screen bg-gray-100 relative overflow-hidden">
@@ -212,7 +184,12 @@ function BloxburgGPS() {
             </div>
             {route.length > 0 && (
               <div className="text-sm text-blue-600 font-medium">
-                Route: {route.length} points, {Math.round(routeDistance)} units
+                GPS Route: {route.length} waypoints
+              </div>
+            )}
+            {isCalculating && (
+              <div className="text-sm text-orange-600">
+                Calculating route...
               </div>
             )}
           </div>
@@ -226,26 +203,26 @@ function BloxburgGPS() {
           className={`p-3 rounded-lg shadow-lg transition-colors ${
             showRoads ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'
           }`}
+          title="Toggle road overlay"
         >
           🛣️
         </button>
         <button
           onClick={clearAll}
           className="p-3 bg-white rounded-lg shadow-lg text-gray-700"
+          title="Clear route"
         >
           🗑️
         </button>
+        <button
+          onClick={calculateRoute}
+          disabled={!startPoint || !endPoint}
+          className="p-3 bg-green-600 text-white rounded-lg shadow-lg disabled:bg-gray-400"
+          title="Recalculate route"
+        >
+          🧭
+        </button>
       </div>
-
-      {/* Loading */}
-      {isCalculating && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
-          <div className="bg-white rounded-lg shadow-lg p-4 flex items-center gap-3">
-            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span>Calculating...</span>
-          </div>
-        </div>
-      )}
 
       {/* Instructions */}
       {!startPoint && (
@@ -260,6 +237,14 @@ function BloxburgGPS() {
         <div className="absolute bottom-4 left-4 right-4 z-10">
           <div className="bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-center max-w-md mx-auto">
             Click anywhere to set END point
+          </div>
+        </div>
+      )}
+
+      {route.length > 0 && (
+        <div className="absolute bottom-4 left-4 right-4 z-10">
+          <div className="bg-green-600 text-white px-4 py-2 rounded-lg text-center max-w-md mx-auto">
+            GPS Route Active - {route.length} waypoints
           </div>
         </div>
       )}
@@ -283,7 +268,7 @@ function BloxburgGPS() {
             height="600"
           />
 
-          {/* YOUR ROAD MAP - EXACT SAME SIZE */}
+          {/* Your road map - perfect 1:1 scaling */}
           {showRoads && (
             <image
               href="https://i.imgur.com/ySLMbQS.png"
@@ -295,7 +280,19 @@ function BloxburgGPS() {
             />
           )}
 
-          {/* GPS ROUTE - THICK BLUE LINE */}
+          {/* Show road grid points when roads are visible */}
+          {showRoads && Object.entries(ROAD_POINTS).map(([pointId, coords]) => (
+            <circle
+              key={pointId}
+              cx={coords.x}
+              cy={coords.y}
+              r="2"
+              fill="yellow"
+              opacity="0.5"
+            />
+          ))}
+
+          {/* GPS ROUTE - BIG BLUE LINE */}
           {route.length > 1 && route.map((pointId, index) => {
             if (index === route.length - 1) return null;
             const start = ROAD_POINTS[pointId];
@@ -308,32 +305,32 @@ function BloxburgGPS() {
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke="#1E90FF"
-                strokeWidth="6"
+                stroke="#0066FF"
+                strokeWidth="8"
                 strokeLinecap="round"
                 opacity="0.8"
               />
             );
           })}
 
-          {/* START MARKER */}
+          {/* START MARKER - BIG GREEN */}
           {startCoords && (
             <circle
               cx={startCoords.x}
               cy={startCoords.y}
-              r="10"
+              r="12"
               fill="#00FF00"
               stroke="white"
               strokeWidth="3"
             />
           )}
 
-          {/* END MARKER */}
+          {/* END MARKER - BIG RED */}
           {endCoords && (
             <circle
               cx={endCoords.x}
               cy={endCoords.y}
-              r="10"
+              r="12"
               fill="#FF0000"
               stroke="white"
               strokeWidth="3"
