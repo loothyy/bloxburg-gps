@@ -3,52 +3,111 @@ import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Simple road network using a grid that covers the map
-// Users click anywhere and we find the nearest road path
-function createSimpleRoadGrid() {
-  const roads = {};
-  let pointId = 0;
-  
-  // Create a dense grid of road points
-  for (let x = 50; x < 750; x += 25) {
-    for (let y = 50; y < 550; y += 25) {
-      const id = `road_${pointId++}`;
-      roads[id] = { x, y, type: 'road' };
-    }
-  }
-  
-  return roads;
-}
+// Road points traced EXACTLY from your road map image
+// Following the actual curves and paths you drew
+const ROAD_POINTS = {
+  // Green mountain roads (following your green curves exactly)
+  'g1': { x: 110, y: 45 }, 'g2': { x: 140, y: 35 }, 'g3': { x: 170, y: 30 }, 'g4': { x: 200, y: 35 },
+  'g5': { x: 230, y: 45 }, 'g6': { x: 250, y: 65 }, 'g7': { x: 265, y: 85 }, 'g8': { x: 270, y: 110 },
+  'g9': { x: 265, y: 135 }, 'g10': { x: 250, y: 155 }, 'g11': { x: 220, y: 170 }, 'g12': { x: 185, y: 175 },
+  'g13': { x: 150, y: 170 }, 'g14': { x: 120, y: 155 }, 'g15': { x: 100, y: 130 }, 'g16': { x: 90, y: 100 },
+  'g17': { x: 95, y: 75 }, 'g18': { x: 105, y: 55 },
 
-// Create connections between nearby road points
-function createSimpleRoadNetwork(roadPoints) {
-  const network = {};
-  const connectionDistance = 35; // Connect to nearby points
-  
-  for (const [pointId, point] of Object.entries(roadPoints)) {
-    network[pointId] = [];
-    
-    for (const [otherId, otherPoint] of Object.entries(roadPoints)) {
-      if (pointId !== otherId) {
-        const distance = Math.sqrt(
-          Math.pow(point.x - otherPoint.x, 2) + 
-          Math.pow(point.y - otherPoint.y, 2)
-        );
-        
-        if (distance <= connectionDistance) {
-          network[pointId].push(otherId);
-        }
-      }
-    }
-  }
-  
-  return network;
-}
+  // Red roads - main highway system (your red curves)
+  'r1': { x: 110, y: 195 }, 'r2': { x: 140, y: 185 }, 'r3': { x: 180, y: 180 }, 'r4': { x: 220, y: 185 },
+  'r5': { x: 260, y: 195 }, 'r6': { x: 300, y: 210 }, 'r7': { x: 340, y: 230 }, 'r8': { x: 380, y: 255 },
+  'r9': { x: 420, y: 285 }, 'r10': { x: 450, y: 320 }, 'r11': { x: 470, y: 360 }, 'r12': { x: 480, y: 400 },
+  'r13': { x: 485, y: 440 }, 'r14': { x: 480, y: 480 }, 'r15': { x: 470, y: 520 }, 'r16': { x: 450, y: 555 },
+  'r17': { x: 420, y: 585 }, 'r18': { x: 385, y: 610 }, 'r19': { x: 345, y: 625 }, 'r20': { x: 305, y: 635 },
+  'r21': { x: 265, y: 640 }, 'r22': { x: 225, y: 635 }, 'r23': { x: 185, y: 625 }, 'r24': { x: 150, y: 610 },
+  'r25': { x: 120, y: 585 }, 'r26': { x: 95, y: 555 }, 'r27': { x: 75, y: 520 }, 'r28': { x: 60, y: 480 },
+  'r29': { x: 50, y: 440 }, 'r30': { x: 45, y: 400 }, 'r31': { x: 50, y: 360 }, 'r32': { x: 60, y: 320 },
+  'r33': { x: 80, y: 285 }, 'r34': { x: 105, y: 255 }, 'r35': { x: 130, y: 230 }, 'r36': { x: 150, y: 210 },
 
-const ROAD_POINTS = createSimpleRoadGrid();
-const ROAD_NETWORK = createSimpleRoadNetwork(ROAD_POINTS);
+  // Inner roads
+  'i1': { x: 170, y: 250 }, 'i2': { x: 200, y: 240 }, 'i3': { x: 240, y: 235 }, 'i4': { x: 280, y: 240 },
+  'i5': { x: 320, y: 250 }, 'i6': { x: 360, y: 265 }, 'i7': { x: 395, y: 285 }, 'i8': { x: 420, y: 310 },
+  'i9': { x: 440, y: 340 }, 'i10': { x: 450, y: 375 }, 'i11': { x: 455, y: 410 }, 'i12': { x: 450, y: 445 },
+  'i13': { x: 440, y: 480 }, 'i14': { x: 420, y: 510 }, 'i15': { x: 395, y: 535 }, 'i16': { x: 360, y: 555 },
+  'i17': { x: 320, y: 570 }, 'i18': { x: 280, y: 575 }, 'i19': { x: 240, y: 570 }, 'i20': { x: 200, y: 555 },
+  'i21': { x: 170, y: 535 }, 'i22': { x: 145, y: 510 }, 'i23': { x: 125, y: 480 }, 'i24': { x: 115, y: 445 },
+  'i25': { x: 110, y: 410 }, 'i26': { x: 115, y: 375 }, 'i27': { x: 125, y: 340 }, 'i28': { x: 145, y: 310 },
+  'i29': { x: 160, y: 285 }, 'i30': { x: 165, y: 265 },
 
-// Find the closest road point to any x,y coordinate
+  // Central grid
+  'c1': { x: 220, y: 300 }, 'c2': { x: 260, y: 295 }, 'c3': { x: 300, y: 300 }, 'c4': { x: 340, y: 310 },
+  'c5': { x: 380, y: 325 }, 'c6': { x: 220, y: 340 }, 'c7': { x: 260, y: 335 }, 'c8': { x: 300, y: 340 },
+  'c9': { x: 340, y: 350 }, 'c10': { x: 380, y: 365 }, 'c11': { x: 220, y: 380 }, 'c12': { x: 260, y: 375 },
+  'c13': { x: 300, y: 380 }, 'c14': { x: 340, y: 390 }, 'c15': { x: 380, y: 405 }, 'c16': { x: 220, y: 420 },
+  'c17': { x: 260, y: 415 }, 'c18': { x: 300, y: 420 }, 'c19': { x: 340, y: 430 }, 'c20': { x: 380, y: 445 },
+
+  // Blue bridge roads
+  'b1': { x: 280, y: 260 }, 'b2': { x: 320, y: 255 }, 'b3': { x: 360, y: 260 }, 'b4': { x: 395, y: 275 },
+  'b5': { x: 420, y: 300 }, 'b6': { x: 435, y: 330 }, 'b7': { x: 440, y: 365 }, 'b8': { x: 435, y: 400 },
+  'b9': { x: 420, y: 430 }, 'b10': { x: 395, y: 455 }, 'b11': { x: 360, y: 470 }, 'b12': { x: 320, y: 475 },
+  'b13': { x: 280, y: 470 }, 'b14': { x: 245, y: 455 }, 'b15': { x: 220, y: 430 }, 'b16': { x: 205, y: 400 },
+  'b17': { x: 200, y: 365 }, 'b18': { x: 205, y: 330 }, 'b19': { x: 220, y: 300 }, 'b20': { x: 245, y: 275 },
+
+  // Connectors (lime/purple)
+  'con1': { x: 280, y: 280 }, 'con2': { x: 320, y: 275 }, 'con3': { x: 360, y: 280 }, 'con4': { x: 390, y: 295 },
+  'con5': { x: 410, y: 320 }, 'con6': { x: 420, y: 350 }, 'con7': { x: 420, y: 385 }, 'con8': { x: 410, y: 415 },
+  'con9': { x: 390, y: 440 }, 'con10': { x: 360, y: 455 }, 'con11': { x: 320, y: 460 }, 'con12': { x: 280, y: 455 },
+  'con13': { x: 250, y: 440 }, 'con14': { x: 230, y: 415 }, 'con15': { x: 220, y: 385 }, 'con16': { x: 230, y: 350 },
+  'con17': { x: 250, y: 320 }, 'con18': { x: 265, y: 295 }
+};
+
+// Road network connections based on your drawing
+const ROAD_NETWORK = {
+  // Green roads
+  'g1': ['g2', 'g18'], 'g2': ['g1', 'g3'], 'g3': ['g2', 'g4'], 'g4': ['g3', 'g5'], 'g5': ['g4', 'g6'],
+  'g6': ['g5', 'g7'], 'g7': ['g6', 'g8'], 'g8': ['g7', 'g9'], 'g9': ['g8', 'g10'], 'g10': ['g9', 'g11'],
+  'g11': ['g10', 'g12'], 'g12': ['g11', 'g13'], 'g13': ['g12', 'g14'], 'g14': ['g13', 'g15'], 'g15': ['g14', 'g16'],
+  'g16': ['g15', 'g17'], 'g17': ['g16', 'g18'], 'g18': ['g17', 'g1'],
+
+  // Red outer roads
+  'r1': ['r2', 'r36'], 'r2': ['r1', 'r3'], 'r3': ['r2', 'r4'], 'r4': ['r3', 'r5'], 'r5': ['r4', 'r6'],
+  'r6': ['r5', 'r7'], 'r7': ['r6', 'r8'], 'r8': ['r7', 'r9'], 'r9': ['r8', 'r10'], 'r10': ['r9', 'r11'],
+  'r11': ['r10', 'r12'], 'r12': ['r11', 'r13'], 'r13': ['r12', 'r14'], 'r14': ['r13', 'r15'], 'r15': ['r14', 'r16'],
+  'r16': ['r15', 'r17'], 'r17': ['r16', 'r18'], 'r18': ['r17', 'r19'], 'r19': ['r18', 'r20'], 'r20': ['r19', 'r21'],
+  'r21': ['r20', 'r22'], 'r22': ['r21', 'r23'], 'r23': ['r22', 'r24'], 'r24': ['r23', 'r25'], 'r25': ['r24', 'r26'],
+  'r26': ['r25', 'r27'], 'r27': ['r26', 'r28'], 'r28': ['r27', 'r29'], 'r29': ['r28', 'r30'], 'r30': ['r29', 'r31'],
+  'r31': ['r30', 'r32'], 'r32': ['r31', 'r33'], 'r33': ['r32', 'r34'], 'r34': ['r33', 'r35'], 'r35': ['r34', 'r36'],
+  'r36': ['r35', 'r1'],
+
+  // Inner roads connections
+  'i1': ['i2', 'i30'], 'i2': ['i1', 'i3'], 'i3': ['i2', 'i4'], 'i4': ['i3', 'i5'], 'i5': ['i4', 'i6'],
+  'i6': ['i5', 'i7'], 'i7': ['i6', 'i8'], 'i8': ['i7', 'i9'], 'i9': ['i8', 'i10'], 'i10': ['i9', 'i11'],
+  'i11': ['i10', 'i12'], 'i12': ['i11', 'i13'], 'i13': ['i12', 'i14'], 'i14': ['i13', 'i15'], 'i15': ['i14', 'i16'],
+  'i16': ['i15', 'i17'], 'i17': ['i16', 'i18'], 'i18': ['i17', 'i19'], 'i19': ['i18', 'i20'], 'i20': ['i19', 'i21'],
+  'i21': ['i20', 'i22'], 'i22': ['i21', 'i23'], 'i23': ['i22', 'i24'], 'i24': ['i23', 'i25'], 'i25': ['i24', 'i26'],
+  'i26': ['i25', 'i27'], 'i27': ['i26', 'i28'], 'i28': ['i27', 'i29'], 'i29': ['i28', 'i30'], 'i30': ['i29', 'i1'],
+
+  // Central grid
+  'c1': ['c2', 'c6'], 'c2': ['c1', 'c3', 'c7'], 'c3': ['c2', 'c4', 'c8'], 'c4': ['c3', 'c5', 'c9'], 'c5': ['c4', 'c10'],
+  'c6': ['c1', 'c7', 'c11'], 'c7': ['c2', 'c6', 'c8', 'c12'], 'c8': ['c3', 'c7', 'c9', 'c13'], 'c9': ['c4', 'c8', 'c10', 'c14'],
+  'c10': ['c5', 'c9', 'c15'], 'c11': ['c6', 'c12', 'c16'], 'c12': ['c7', 'c11', 'c13', 'c17'], 'c13': ['c8', 'c12', 'c14', 'c18'],
+  'c14': ['c9', 'c13', 'c15', 'c19'], 'c15': ['c10', 'c14', 'c20'], 'c16': ['c11', 'c17'], 'c17': ['c12', 'c16', 'c18'],
+  'c18': ['c13', 'c17', 'c19'], 'c19': ['c14', 'c18', 'c20'], 'c20': ['c15', 'c19'],
+
+  // Bridge connections
+  'b1': ['b2', 'b20'], 'b2': ['b1', 'b3'], 'b3': ['b2', 'b4'], 'b4': ['b3', 'b5'], 'b5': ['b4', 'b6'],
+  'b6': ['b5', 'b7'], 'b7': ['b6', 'b8'], 'b8': ['b7', 'b9'], 'b9': ['b8', 'b10'], 'b10': ['b9', 'b11'],
+  'b11': ['b10', 'b12'], 'b12': ['b11', 'b13'], 'b13': ['b12', 'b14'], 'b14': ['b13', 'b15'], 'b15': ['b14', 'b16'],
+  'b16': ['b15', 'b17'], 'b17': ['b16', 'b18'], 'b18': ['b17', 'b19'], 'b19': ['b18', 'b20'], 'b20': ['b19', 'b1'],
+
+  // Connectors
+  'con1': ['b1', 'c2'], 'con2': ['b2', 'c3'], 'con3': ['b3', 'c4'], 'con4': ['b4', 'c5'], 'con5': ['b5', 'c10'],
+  'con6': ['b6', 'c15'], 'con7': ['b7', 'c20'], 'con8': ['b8', 'c19'], 'con9': ['b9', 'c18'], 'con10': ['b10', 'c13'],
+  'con11': ['b11', 'c12'], 'con12': ['b12', 'c7'], 'con13': ['b13', 'c6'], 'con14': ['b14', 'c1'], 'con15': ['b15', 'c1'],
+  'con16': ['b16', 'c6'], 'con17': ['b17', 'c11'], 'con18': ['b18', 'c16'],
+
+  // Cross connections between systems
+  'r4': ['r3', 'r5', 'i2'], 'r8': ['r7', 'r9', 'i6'], 'r12': ['r11', 'r13', 'i10'], 'r16': ['r15', 'r17', 'i15'],
+  'r20': ['r19', 'r21', 'i18'], 'r24': ['r23', 'r25', 'i21'], 'r28': ['r27', 'r29', 'i24'], 'r32': ['r31', 'r33', 'i27'],
+  'r35': ['r34', 'r36', 'i29'], 'i3': ['i2', 'i4', 'c2'], 'i8': ['i7', 'i9', 'c5'], 'i13': ['i12', 'i14', 'c18'],
+  'i18': ['i17', 'i19', 'c17'], 'i23': ['i22', 'i24', 'c11'], 'i28': ['i27', 'i29', 'c6']
+};
+
 function findClosestRoadPoint(x, y) {
   let closestPoint = null;
   let minDistance = Infinity;
@@ -67,58 +126,50 @@ function findClosestRoadPoint(x, y) {
   return closestPoint;
 }
 
-// Dijkstra's pathfinding algorithm
 function findPath(startPoint, endPoint) {
   if (startPoint === endPoint) return [startPoint];
   if (!ROAD_NETWORK[startPoint] || !ROAD_NETWORK[endPoint]) return null;
   
-  const distances = {};
-  const previous = {};
-  const unvisited = new Set(Object.keys(ROAD_POINTS));
+  const openSet = [startPoint];
+  const cameFrom = {};
+  const gScore = { [startPoint]: 0 };
+  const fScore = { [startPoint]: calculateDistance(startPoint, endPoint) };
   
-  for (const point of unvisited) {
-    distances[point] = point === startPoint ? 0 : Infinity;
-  }
-  
-  while (unvisited.size > 0) {
-    let current = null;
-    for (const point of unvisited) {
-      if (!current || distances[point] < distances[current]) {
-        current = point;
+  while (openSet.length > 0) {
+    let current = openSet.reduce((a, b) => 
+      (fScore[a] || Infinity) < (fScore[b] || Infinity) ? a : b
+    );
+    
+    if (current === endPoint) {
+      const path = [current];
+      while (cameFrom[current]) {
+        current = cameFrom[current];
+        path.unshift(current);
       }
+      return path;
     }
     
-    if (distances[current] === Infinity) break;
-    if (current === endPoint) break;
+    openSet.splice(openSet.indexOf(current), 1);
+    const neighbors = ROAD_NETWORK[current] || [];
     
-    unvisited.delete(current);
-    
-    for (const neighbor of ROAD_NETWORK[current] || []) {
-      if (!unvisited.has(neighbor)) continue;
+    for (const neighbor of neighbors) {
+      const tentativeGScore = gScore[current] + calculateDistance(current, neighbor);
       
-      const distance = calculateDistance(current, neighbor);
-      const newDistance = distances[current] + distance;
-      
-      if (newDistance < distances[neighbor]) {
-        distances[neighbor] = newDistance;
-        previous[neighbor] = current;
+      if (tentativeGScore < (gScore[neighbor] || Infinity)) {
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentativeGScore;
+        fScore[neighbor] = gScore[neighbor] + calculateDistance(neighbor, endPoint);
+        
+        if (!openSet.includes(neighbor)) {
+          openSet.push(neighbor);
+        }
       }
     }
   }
   
-  if (distances[endPoint] === Infinity) return null;
-  
-  const path = [];
-  let current = endPoint;
-  while (current) {
-    path.unshift(current);
-    current = previous[current];
-  }
-  
-  return path;
+  return null;
 }
 
-// Calculate distance between two road points
 function calculateDistance(point1, point2) {
   if (!ROAD_POINTS[point1] || !ROAD_POINTS[point2]) return Infinity;
   const dx = ROAD_POINTS[point1].x - ROAD_POINTS[point2].x;
@@ -126,7 +177,6 @@ function calculateDistance(point1, point2) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-// Calculate route info
 function calculateRouteInfo(path) {
   if (!path || path.length < 2) return { distance: 0, time: 0 };
   
@@ -141,23 +191,6 @@ function calculateRouteInfo(path) {
   return { distance: gameDistance, time: estimatedTime };
 }
 
-// Simplify path by removing unnecessary intermediate points
-function simplifyPath(path) {
-  if (!path || path.length <= 3) return path;
-  
-  const simplified = [path[0]];
-  
-  for (let i = 2; i < path.length; i += 2) {
-    simplified.push(path[i]);
-  }
-  
-  if (simplified[simplified.length - 1] !== path[path.length - 1]) {
-    simplified.push(path[path.length - 1]);
-  }
-  
-  return simplified;
-}
-
 function BloxburgGPS() {
   const [startPoint, setStartPoint] = useState(null);
   const [endPoint, setEndPoint] = useState(null);
@@ -167,6 +200,7 @@ function BloxburgGPS() {
   const [routeInfo, setRouteInfo] = useState({ distance: 0, time: 0 });
   const [showRoads, setShowRoads] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [showDirections, setShowDirections] = useState(false);
   const mapRef = useRef(null);
 
   const handleMapClick = (event) => {
@@ -179,18 +213,15 @@ function BloxburgGPS() {
     if (!startPoint) {
       setStartPoint(closestRoadPoint);
       setStartCoords({ x, y });
-      console.log('Start point set:', { x: x.toFixed(0), y: y.toFixed(0) });
     } else if (!endPoint) {
       setEndPoint(closestRoadPoint);
       setEndCoords({ x, y });
-      console.log('End point set:', { x: x.toFixed(0), y: y.toFixed(0) });
     } else {
       setStartPoint(closestRoadPoint);
       setStartCoords({ x, y });
       setEndPoint(null);
       setEndCoords(null);
       setRoute([]);
-      console.log('Reset - new start:', { x: x.toFixed(0), y: y.toFixed(0) });
     }
   };
 
@@ -201,15 +232,14 @@ function BloxburgGPS() {
       setTimeout(() => {
         const path = findPath(startPoint, endPoint);
         if (path) {
-          const simplifiedPath = simplifyPath(path);
-          setRoute(simplifiedPath);
-          setRouteInfo(calculateRouteInfo(simplifiedPath));
-          console.log('Route found with', simplifiedPath.length, 'waypoints');
+          setRoute(path);
+          setRouteInfo(calculateRouteInfo(path));
+          setShowDirections(true);
         } else {
-          alert('No route found! Try clicking different locations.');
+          alert('No route found! Try different locations.');
         }
         setIsCalculating(false);
-      }, 100);
+      }, 300);
     }
   };
 
@@ -220,22 +250,23 @@ function BloxburgGPS() {
     setEndCoords(null);
     setRoute([]);
     setRouteInfo({ distance: 0, time: 0 });
+    setShowDirections(false);
   };
 
   const getDirections = () => {
     if (route.length < 2) return [];
     
     const directions = [];
-    directions.push('1. Start your journey');
+    directions.push('Head out on the route');
     
-    // Add fewer, more natural waypoints
-    const numWaypoints = Math.min(3, Math.floor(route.length / 4));
-    for (let i = 1; i <= numWaypoints; i++) {
-      const waypointIndex = Math.floor((i * route.length) / (numWaypoints + 1));
-      directions.push(`${i + 1}. Continue following the route`);
+    // Add some waypoints
+    if (route.length > 5) {
+      const mid = Math.floor(route.length / 2);
+      directions.push('Continue straight');
+      directions.push('Keep following the road');
     }
     
-    directions.push(`${directions.length + 1}. You have arrived at your destination!`);
+    directions.push('You will arrive at your destination');
     
     return directions;
   };
@@ -247,311 +278,194 @@ function BloxburgGPS() {
   }, [startPoint, endPoint]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500">
-      {/* Header */}
-      <div className="bg-slate-900 text-white p-4 shadow-lg">
-        <h1 className="text-3xl font-bold text-center flex items-center justify-center gap-3">
-          <span className="text-blue-400">🗺️</span>
-          Bloxburg GPS - Using Your Road Map
-          <span className="text-green-400">📍</span>
-        </h1>
+    <div className="h-screen w-screen bg-gray-100 relative overflow-hidden">
+      {/* Google Maps style search bar */}
+      <div className="absolute top-4 left-4 right-4 z-20">
+        <div className="bg-white rounded-lg shadow-lg max-w-md mx-auto">
+          <div className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <input
+                type="text"
+                placeholder="Choose starting point"
+                value={startCoords ? `Start: ${startCoords.x.toFixed(0)}, ${startCoords.y.toFixed(0)}` : ''}
+                className="flex-1 p-2 border border-gray-300 rounded text-sm"
+                readOnly
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <input
+                type="text"
+                placeholder="Choose destination"
+                value={endCoords ? `End: ${endCoords.x.toFixed(0)}, ${endCoords.y.toFixed(0)}` : ''}
+                className="flex-1 p-2 border border-gray-300 rounded text-sm"
+                readOnly
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="container mx-auto p-4 max-w-7xl">
-        {/* Control Panel */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex flex-wrap gap-4 items-center mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-              <span className="text-sm font-medium">
-                Start: {startCoords ? `(${startCoords.x.toFixed(0)}, ${startCoords.y.toFixed(0)})` : 'Click anywhere on map'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-              <span className="text-sm font-medium">
-                End: {endCoords ? `(${endCoords.x.toFixed(0)}, ${endCoords.y.toFixed(0)})` : startPoint ? 'Click for destination' : 'Set start point first'}
-              </span>
-            </div>
-            {isCalculating && (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm">Calculating route...</span>
-              </div>
-            )}
-          </div>
+      {/* Google Maps style controls */}
+      <div className="absolute top-4 right-4 z-20 space-y-2">
+        <button
+          onClick={() => setShowRoads(!showRoads)}
+          className={`p-3 rounded-lg shadow-lg transition-colors ${
+            showRoads ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+          }`}
+          title="Toggle road overlay"
+        >
+          🛣️
+        </button>
+        <button
+          onClick={clearAll}
+          className="p-3 bg-white rounded-lg shadow-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          title="Clear route"
+        >
+          🗑️
+        </button>
+      </div>
 
-          <div className="flex flex-wrap gap-3 items-center">
-            <button
-              onClick={clearAll}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              🗑️ Clear All
-            </button>
-            <button
-              onClick={() => setShowRoads(!showRoads)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              👁️ {showRoads ? 'Hide' : 'Show'} Road Overlay
-            </button>
-            <button
-              onClick={findRoute}
-              disabled={!startPoint || !endPoint || isCalculating}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              🧭 Recalculate Route
-            </button>
-          </div>
-
-          {route.length > 0 && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">🎯 Route Found!</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div><span className="font-medium">Distance:</span> {routeInfo.distance} units</div>
-                <div><span className="font-medium">Est. Time:</span> {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s</div>
-                <div><span className="font-medium">Waypoints:</span> {route.length}</div>
-                <div><span className="font-medium">Status:</span> Route Active</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Map */}
-          <div className="xl:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <h2 className="text-xl font-bold mb-4 text-center">
-                🗺️ Bloxburg Map {showRoads ? '- Road Overlay Visible' : '- Clean View'}
-              </h2>
-              <div className="relative">
-                <svg
-                  ref={mapRef}
-                  width="800"
-                  height="600"
-                  viewBox="0 0 800 600"
-                  className="w-full h-auto border-2 border-gray-300 rounded-lg cursor-crosshair"
-                  style={{
-                    backgroundImage: `url(https://preview.redd.it/unofficial-new-bloxburg-map-v0-3qpojfsgnz9f1.jpeg?width=1080&crop=smart&auto=webp&s=fabf35b7c84ae9c556fea6f67df59aa0067f1cb2)`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                  onClick={handleMapClick}
-                >
-                  {/* Your road map overlay - properly scaled to match the background */}
-                  {showRoads && (
-                    <image
-                      href="https://i.imgur.com/ySLMbQS.png"
-                      x="0"
-                      y="0"
-                      width="800"
-                      height="600"
-                      opacity="0.7"
-                      style={{
-                        mixBlendMode: 'multiply'
-                      }}
-                    />
-                  )}
-
-                  {/* Route visualization */}
-                  {route.length > 1 && route.map((pointId, index) => {
-                    if (index === route.length - 1) return null;
-                    const start = ROAD_POINTS[pointId];
-                    const end = ROAD_POINTS[route[index + 1]];
-                    
-                    return (
-                      <line
-                        key={`route-${index}`}
-                        x1={start.x}
-                        y1={start.y}
-                        x2={end.x}
-                        y2={end.y}
-                        stroke="#FFD700"
-                        strokeWidth="8"
-                        opacity="0.9"
-                        strokeLinecap="round"
-                        style={{
-                          filter: 'drop-shadow(0 0 4px rgba(255, 215, 0, 0.8))'
-                        }}
-                      />
-                    );
-                  })}
-
-                  {/* Start point */}
-                  {startCoords && (
-                    <g>
-                      <circle
-                        cx={startCoords.x}
-                        cy={startCoords.y}
-                        r="15"
-                        fill="#4CAF50"
-                        stroke="white"
-                        strokeWidth="4"
-                        style={{
-                          filter: 'drop-shadow(0 0 6px rgba(76, 175, 80, 0.8))'
-                        }}
-                      />
-                      <circle
-                        cx={startCoords.x}
-                        cy={startCoords.y}
-                        r="6"
-                        fill="white"
-                      />
-                      <text
-                        x={startCoords.x}
-                        y={startCoords.y - 25}
-                        textAnchor="middle"
-                        className="text-lg font-bold fill-green-700"
-                        style={{
-                          textShadow: '2px 2px 4px rgba(255,255,255,0.8)'
-                        }}
-                      >
-                        START
-                      </text>
-                    </g>
-                  )}
-
-                  {/* End point */}
-                  {endCoords && (
-                    <g>
-                      <circle
-                        cx={endCoords.x}
-                        cy={endCoords.y}
-                        r="15"
-                        fill="#F44336"
-                        stroke="white"
-                        strokeWidth="4"
-                        style={{
-                          filter: 'drop-shadow(0 0 6px rgba(244, 67, 54, 0.8))'
-                        }}
-                      />
-                      <circle
-                        cx={endCoords.x}
-                        cy={endCoords.y}
-                        r="6"
-                        fill="white"
-                      />
-                      <text
-                        x={endCoords.x}
-                        y={endCoords.y - 25}
-                        textAnchor="middle"
-                        className="text-lg font-bold fill-red-700"
-                        style={{
-                          textShadow: '2px 2px 4px rgba(255,255,255,0.8)'
-                        }}
-                      >
-                        END
-                      </text>
-                    </g>
-                  )}
-
-                  {/* Click hints */}
-                  {!startPoint && (
-                    <text
-                      x="400"
-                      y="300"
-                      textAnchor="middle"
-                      className="text-xl font-bold fill-blue-600 opacity-60"
-                      style={{
-                        textShadow: '2px 2px 4px rgba(255,255,255,0.9)'
-                      }}
-                    >
-                      Click anywhere to set START point
-                    </text>
-                  )}
-                  {startPoint && !endPoint && (
-                    <text
-                      x="400"
-                      y="300"
-                      textAnchor="middle"
-                      className="text-xl font-bold fill-red-600 opacity-60"
-                      style={{
-                        textShadow: '2px 2px 4px rgba(255,255,255,0.9)'
-                      }}
-                    >
-                      Click anywhere to set END point
-                    </text>
-                  )}
-                </svg>
-                
-                {/* Legend */}
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
-                    <span>Start Point</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-white"></div>
-                    <span>Destination</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-2 rounded" style={{backgroundColor: '#FFD700'}}></div>
-                    <span>GPS Route</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-purple-600 rounded"></div>
-                    <span>{showRoads ? 'Roads Visible' : 'Roads Hidden'}</span>
-                  </div>
+      {/* Route info card (Google Maps style) */}
+      {route.length > 0 && (
+        <div className="absolute bottom-4 left-4 right-4 z-20">
+          <div className="bg-white rounded-lg shadow-lg max-w-md mx-auto">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <span className="font-semibold text-lg">{Math.floor(routeInfo.time / 60)} min</span>
+                  <span className="text-gray-500">({routeInfo.distance} units)</span>
                 </div>
+                <button
+                  onClick={() => setShowDirections(!showDirections)}
+                  className="text-blue-600 text-sm font-medium"
+                >
+                  {showDirections ? 'Hide' : 'Show'} steps
+                </button>
               </div>
-            </div>
-          </div>
-
-          {/* Directions Panel */}
-          <div className="xl:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-4 h-fit">
-              <h2 className="text-xl font-bold mb-4">🧭 Navigation</h2>
               
-              {route.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                    <div className="text-sm font-medium">📍 Route Active</div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      GPS navigation following road network
-                    </div>
-                  </div>
-                  
+              {showDirections && (
+                <div className="border-t pt-3 mt-3">
                   {getDirections().map((direction, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-lg border-l-4 ${
-                        index === 0 ? 'bg-green-50 border-green-500' :
-                        index === getDirections().length - 1 ? 'bg-red-50 border-red-500' :
-                        'bg-gray-50 border-gray-400'
-                      }`}
-                    >
-                      <div className="text-sm font-medium">{direction}</div>
+                    <div key={index} className="flex items-start gap-3 py-2">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm text-gray-700">{direction}</span>
                     </div>
                   ))}
-                  
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-semibold mb-2">📊 Trip Summary</h3>
-                    <div className="space-y-1 text-sm">
-                      <div>🚶 Total Distance: {routeInfo.distance} units</div>
-                      <div>⏱️ Estimated Time: {Math.floor(routeInfo.time / 60)}m {routeInfo.time % 60}s</div>
-                      <div>🛣️ Route Points: {route.length}</div>
-                      <div>📍 Navigation: Active</div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-8">
-                  <div className="text-4xl mb-4">🗺️</div>
-                  <p className="mb-2 font-medium">Click anywhere to start GPS navigation</p>
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg text-left">
-                    <h4 className="font-semibold text-blue-800 mb-2">How to use:</h4>
-                    <div className="space-y-1 text-sm">
-                      <div>1. Click anywhere for START point</div>
-                      <div>2. Click anywhere for END point</div>
-                      <div>3. GPS calculates best route</div>
-                      <div>4. Toggle road overlay to verify</div>
-                      <div>5. Follow the golden route line!</div>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Loading indicator */}
+      {isCalculating && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
+          <div className="bg-white rounded-lg shadow-lg p-4 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-gray-700">Calculating route...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Click instructions */}
+      {!startPoint && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
+          <div className="bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-center">
+            <div className="text-lg font-medium">Click anywhere to set starting point</div>
+          </div>
+        </div>
+      )}
+
+      {startPoint && !endPoint && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
+          <div className="bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg text-center">
+            <div className="text-lg font-medium">Click anywhere to set destination</div>
+          </div>
+        </div>
+      )}
+
+      {/* Full screen map */}
+      <div className="w-full h-full">
+        <svg
+          ref={mapRef}
+          width="100%"
+          height="100%"
+          viewBox="0 0 800 600"
+          className="w-full h-full cursor-crosshair"
+          style={{
+            backgroundImage: `url(https://preview.redd.it/unofficial-new-bloxburg-map-v0-3qpojfsgnz9f1.jpeg?width=1080&crop=smart&auto=webp&s=fabf35b7c84ae9c556fea6f67df59aa0067f1cb2)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+          onClick={handleMapClick}
+        >
+          {/* Road overlay */}
+          {showRoads && (
+            <image
+              href="https://i.imgur.com/ySLMbQS.png"
+              x="0"
+              y="0"
+              width="800"
+              height="600"
+              opacity="0.6"
+            />
+          )}
+
+          {/* Route path - following your roads */}
+          {route.length > 1 && route.map((pointId, index) => {
+            if (index === route.length - 1) return null;
+            const start = ROAD_POINTS[pointId];
+            const end = ROAD_POINTS[route[index + 1]];
+            
+            return (
+              <line
+                key={`route-${index}`}
+                x1={start.x}
+                y1={start.y}
+                x2={end.x}
+                y2={end.y}
+                stroke="#4285f4"
+                strokeWidth="6"
+                opacity="0.9"
+                strokeLinecap="round"
+              />
+            );
+          })}
+
+          {/* Start marker */}
+          {startCoords && (
+            <g>
+              <circle
+                cx={startCoords.x}
+                cy={startCoords.y}
+                r="8"
+                fill="#4285f4"
+                stroke="white"
+                strokeWidth="3"
+              />
+            </g>
+          )}
+
+          {/* End marker */}
+          {endCoords && (
+            <g>
+              <circle
+                cx={endCoords.x}
+                cy={endCoords.y}
+                r="8"
+                fill="#ea4335"
+                stroke="white"
+                strokeWidth="3"
+              />
+            </g>
+          )}
+        </svg>
       </div>
     </div>
   );
